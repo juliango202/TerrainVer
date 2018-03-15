@@ -4,7 +4,6 @@ const DEFAULT_OPTIONS = {
   marginBottom: 60,  // don't generate position in water
   marginLeft: 1,
   surfacePointMinWidth: 4,  // don't pick point where surface is too narrow
-  terrainPointMaxTry: 80,
   seed: Math.random()
 }
 
@@ -12,7 +11,6 @@ const DEFAULT_OPTIONS = {
 // https://en.wikipedia.org/wiki/Halton_sequence
 // This will return a number between [0,1)
 const HALTON_BASE_X = 2
-const HALTON_BASE_Y = 3
 function halton (index, base) {
   let result = 0
   let f = 1 / base
@@ -63,7 +61,6 @@ export default class PositionGenerator {
     }
 
     // Cache some properties
-    this.terrainShape = terrainShape
     this.innerWidth = w - this.options.marginLeft - this.options.marginRight
     this.innerHeight = h - this.options.marginTop - this.options.marginBottom
 
@@ -88,8 +85,6 @@ export default class PositionGenerator {
     }
     this.visited = visited
 
-    const mask = terrainShape.mask // TEMP
-
     // Second pass to remove points where the surface is too narrow
     // To be OK, a point must have a neighbourhood of (surfacePointMinWidth-1)/2
     // points on the left and on the right without breaking distance
@@ -112,7 +107,6 @@ export default class PositionGenerator {
     }
 
     this.haltonIndexX = 0
-    this.haltonIndexY = 0
   }
 
   // Return next random surface point
@@ -121,52 +115,5 @@ export default class PositionGenerator {
     // randomize halton sequence by using the random seed as an offset
     nextRandomNb = (nextRandomNb + this.options.seed) % 1.0
     return this.okPoints[Math.floor(nextRandomNb * this.okPoints.length)]
-  }
-
-  // Return a random 2d point [x,y] outside the margins
-  get2dPoint () {
-    let nextRandomNbX = halton(this.haltonIndexX++, HALTON_BASE_X)
-    let nextRandomNbY = halton(this.haltonIndexY++, HALTON_BASE_Y)
-    // randomize halton sequence by using the random seed as an offset
-    nextRandomNbX = (nextRandomNbX + this.options.seed) % 1.0
-    nextRandomNbY = (nextRandomNbY + this.options.seed) % 1.0
-
-    return [
-      this.options.marginLeft + Math.floor(nextRandomNbX * this.innerWidth),
-      this.options.marginTop + Math.floor(nextRandomNbY * this.innerHeight)
-    ]
-  }
-
-  // Return a random point where a sprite can be integrated to the terrain
-  // For that we take 8 cardinal points from a random point and at least 7 must be inside the terrain
-  // Return false if such a point cannot be found
-  getTerrainPointForSprite (spriteWidth, spriteHeight) {
-    let nbTry = 0
-    while (nbTry < this.options.terrainPointMaxTry) {
-      const topLeft = this.get2dPoint()
-      const cardinalPoints = [
-        [topLeft[0], topLeft[1]],
-        [topLeft[0] + Math.floor(spriteWidth / 2), topLeft[1]],
-        [topLeft[0] + spriteWidth, topLeft[1]],
-        [topLeft[0] + spriteWidth, topLeft[1] + Math.floor(spriteHeight / 2)],
-        [topLeft[0] + spriteWidth, topLeft[1] + spriteHeight],
-        [topLeft[0] + Math.floor(spriteWidth / 2), topLeft[1] + spriteHeight],
-        [topLeft[0], topLeft[1] + spriteHeight],
-        [topLeft[0], topLeft[1] + Math.floor(spriteHeight / 2)]
-      ]
-
-      let isInside = 0
-      for (let point of cardinalPoints) {
-        if (this.terrainShape.mask.data[(point[0] + point[1] * this.terrainShape.mask.width) * 4] === 255) {
-          isInside++
-        }
-      }
-      if (isInside >= 7) {
-        return [topLeft[0], topLeft[1]]
-      }
-
-      nbTry++
-    }
-    return false
   }
 }

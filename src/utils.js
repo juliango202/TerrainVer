@@ -1,7 +1,17 @@
 
-// Generate random integer between min and max(inclusive)
-export function getRandomInt (min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min
+// Generate pseudo random integer between min and max(inclusive)
+// Adapted from: https://gist.github.com/blixt/f17b47c62508be59987b
+export class RandomInt {
+  constructor (seed) {
+    this.seed = seed % 2147483647
+    if (this.seed <= 0) this.seed += 2147483646
+  }
+  
+  next (min, max) {
+    this.seed = this.seed * 16807 % 2147483647;
+    const randomFloat = (this.seed - 1) / 2147483646
+    return Math.floor(randomFloat * (max - min + 1)) + min
+  }
 }
 
 // Convert hex color notation to RGB components
@@ -73,9 +83,9 @@ function getHtmlImageData (img, scaleToSize) {
   return context.getImageData(0, 0, scaleToSize.width, scaleToSize.height)
 }
 
-// Load an image from its URL and return an ImageData array 
+// Load an image from its URL
 const imageCache = new Map()
-export function loadImageData (src, scaleToSize) {
+export function loadImage (src) {
   const imageId = `${src}`
   return imageCache.has(imageId)
     ? Promise.resolve(imageCache.get(imageId))
@@ -83,12 +93,62 @@ export function loadImageData (src, scaleToSize) {
       const img = new Image()
       img.src = src
       img.onload = () => {
+        imageCache.set(imageId, img)
+        resolve(img)
+      }
+    })
+}
+
+// Load an image from its URL, optionaly resize it, and return an ImageData array 
+const imageDataCache = new Map()
+export function loadImageData (src, scaleToSize) {
+  const imageId = `${src}`
+  return imageDataCache.has(imageId)
+    ? Promise.resolve(imageDataCache.get(imageId))
+    : new Promise((resolve) => {
+      const img = new Image()
+      img.src = src
+      img.onload = () => {
         const imageData = getHtmlImageData(img, scaleToSize)
-        imageCache.set(imageId, imageData)
+        imageDataCache.set(imageId, imageData)
         resolve(imageData)
       }
     })
 }
 
+// A simple class to time our methods
+class Timer {
 
+  constructor () {
+    this.entries = {}
+  }
+
+  // Start an iteration of the timer with the given name
+  start (name) {
+    if (!(name in this.entries)) {
+      this.entries[name] = { time: null, avg: 0, nb: 0 }
+    }
+    this.entries[name].time = new Date();
+  }
+  
+  // Stop an iteration of the timer with the given name
+  stop (name) {
+    if (!(name in this.entries)) {
+      throw new Error("The timer '" + name + "' hasn't been started")
+    }
+    this.entries[name].avg += (new Date()).getTime() - this.entries[name].time.getTime();
+    this.entries[name].time = null;
+    this.entries[name].nb++;
+  }
+  
+  toString() {
+    var str = "--Timers--\n";
+    for (let i in this.entries) {
+      str += i + ": avg=" + this.entries[i].avg / this.entries[i].nb + " (" + this.entries[i].nb + " occurences)\n";
+    }
+    return str;
+  }
+}  
+
+export const timer = new Timer();
 

@@ -203,9 +203,9 @@
   
   <div id="result">
     <canvas id="bgcanvas" style="z-index: 10;"></canvas>
-    <canvas id="bgwater" style="position: absolute; left: 0; bottom: 0; height: 160px; z-index: 11;opacity: 0.24;"></canvas>
+    <canvas id="bgwater" style="position: absolute; left: 0; bottom: 0; z-index: 11;opacity: 0.24;"></canvas>
     <canvas id="fgcanvas" style="position: absolute; left: 0; top: 0; z-index: 12;"></canvas>
-    <canvas id="fgwater" style="position: absolute; left: 0; bottom: 0; height: 160px; z-index: 13;opacity: 0.45;"></canvas>
+    <canvas id="fgwater" style="position: absolute; left: 0; bottom: 0; z-index: 13;opacity: 0.45;"></canvas>
   </div>
   <form name="genform" id="genform">
     <table id="gen-tb">
@@ -219,17 +219,14 @@
           Smaller <input id="noiseres" name="noiseres" type="range" min="10" max="60" value="35"> Larger
         </td>
         <td>
-          <input type="radio" name="selshape" id="type1" value="type1" checked/>
-          <label for="type1"><img class="terrtype" src="assets/terrains/type1.png"></label>
+          <input type="radio" name="selshape" id="type1" value="/img/type-1.png" checked/>
+          <label for="type1"><img class="terrtype" src="/img/type-1.png"></label>
 
-          <input type="radio" name="selshape" id="type2" value="type2" />
-          <label for="type2"><img class="terrtype" src="assets/terrains/type2.png"></label>
+          <input type="radio" name="selshape" id="type2" value="/img/type-2.png" />
+          <label for="type2"><img class="terrtype" src="/img/type-2.png"></label>
 
-<!--          <input type="radio" name="selshape" id="type3" value="type3" />
-          <label for="type3"><img class="terrtype" src="assets/terrains/type3.png"></label>-->
-
-          <input type="radio" name="selshape" id="type4" value="type4" />
-          <label for="type4"><img class="terrtype" src="assets/terrains/type4.png"></label>
+          <input type="radio" name="selshape" id="type3" value="/img/type-3.png" />
+          <label for="type3"><img class="terrtype" src="/img/type-3.png"></label>
         </td>
       </tr>
     </table>
@@ -410,17 +407,9 @@
       <td>
         <h6>Step 8</h6>
         <p>
-          First you start with the terrain type. <br>
-          This is a low-resolution image that you can create with any image editor. Notice that there are three zones:
-          <ul>
-          <li>The <i>blue</i> part is the heart of the terrain, meaning it should always show up as terrain in the final mask.</li>
-          <li>The <i>black</i> part is the terrain contour, this is where we want our algorithm to generate random hollows and bumps.</li>
-          <li>The <i>red</i> part is the zone that should be outside the terrain in the final mask.</li>
-          </ul>
-        </p>
-        <p>
-          Initially I had only 2 zones(inside/outside) but it turned out to be difficult to generate hollows and bumps that would not encroach far into the outside zone.
-          The additional <i>black</i> zone is used to contain the encroachment.
+          <form name="avatarsform" id="avatarsform">  
+            Less <input id="nbavatars" name="nbavatars" type="range" min="1" max="50" value="10"> More
+          </form>
         </p>
       </td>
     </tr>

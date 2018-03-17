@@ -1,36 +1,37 @@
 import TerrainGenerator from './src/TerrainGenerator.js'
 import TerrainRenderer from './src/TerrainRenderer.js'
+import { timer } from './src/utils.js'
 
-
-const DEFAULT_TERRAIN_OPTS = {
-  debug: true,
-  width: 1536,
-  height: 960,
+let terrainGenerator = null  
+let terrainShape = null
+let terrainGenOptions = {
   terrainTypeImg: '/img/type-1.png',
-  noiseResolution: 35,
-  noiseResolutionBlack: 18,
-  noiseThreshold: 20.0
+  noiseResolution: 35
 }
-
-let terrainGenerator = null    
+let terrainRenderOptions = {}
     
 // Instantiate the TerrainGenerator with the choosen options
 function newTerrainGenerator(opts) {
-  document.getElementById('gen').disabled = true;
-  const options = Object.assign({}, DEFAULT_TERRAIN_OPTS, opts)
-  terrainGenerator = new TerrainGenerator(options, generate)  
+  disableForm ()
+  terrainGenOptions = Object.assign({ debug: true, width: 1536, height: 960 }, terrainGenOptions, opts)
+  terrainGenerator = new TerrainGenerator(terrainGenOptions, generate)  
 }
 newTerrainGenerator();
 
 
-function generate() {
+function generate () {
   if( !terrainGenerator ) return;
-  
-  const shapeCanvas = terrainGenerator.generate(0)
-  document.getElementById('bgcanvas').parentElement.style.width = shapeCanvas.width + "px";
-  document.getElementById('bgcanvas').parentElement.style.height = shapeCanvas.height + "px"; //fix
-  
-  const graphicsRenderer = new TerrainRenderer(shapeCanvas, {}, () => {
+  terrainShape = terrainGenerator.generate(Math.random())
+  document.getElementById('bgcanvas').parentElement.style.width = terrainShape.width + "px"
+  document.getElementById('bgcanvas').parentElement.style.height = terrainShape.height + "px"
+  renderTerrain ()
+}
+
+function renderTerrain (opts) {
+  if( !terrainShape ) return;
+  terrainRenderOptions = Object.assign({ debug: true }, terrainRenderOptions, opts)
+ 
+  const graphicsRenderer = new TerrainRenderer(terrainShape, terrainRenderOptions, () => {
       graphicsRenderer.drawBackground(
         document.getElementById('bgcanvas'), 
         document.getElementById('bgwater')
@@ -39,19 +40,13 @@ function generate() {
         document.getElementById('fgcanvas'), 
         document.getElementById('fgwater')
       )
-      document.getElementById('gen').disabled = false;
+      document.getElementById('timing').innerHTML = timer.toString();
+      enableForm ()
     }
-  );  
-  //   document.getElementById('timing').innerHTML = theTimer.toString();
+  ); 
 }
 
-
-for(var i = 0; i < document.genform.selshape.length; i++) {
-  document.genform.selshape[i].onclick = function() {
-    newTerrainGenerator({ type: this.value })
-  };
-}       
- 
+// Demo form management
 
 // document.getElementById('showsurface').onchange = function() {
 //   showsurface = this.checked;
@@ -63,15 +58,40 @@ for(var i = 0; i < document.genform.selshape.length; i++) {
 //   newTerrainGenerator();
 // }
 
+for(var i = 0; i < document.genform.selshape.length; i++) {
+  document.genform.selshape[i].onclick = function() {
+    newTerrainGenerator({ terrainTypeImg: this.value })
+  };
+} 
+
 document.getElementById('noiseres').onchange = function() {
   newTerrainGenerator({ noiseResolution: parseInt(this.value) })
 }
 
+document.getElementById('nbavatars').onchange = function() {
+  renderTerrain ({ nbAvatars: parseInt(this.value) })
+}
 
 document.getElementById('gen').onclick = function() {
   generate();
   return false;
 };
+
+function disableForm() {
+  document.getElementById('gen').disabled = true
+  document.getElementById('type1').disabled = true
+  document.getElementById('type2').disabled = true
+  document.getElementById('type3').disabled = true
+  document.getElementById('noiseres').disabled = true
+}
+
+function enableForm() {
+  document.getElementById('gen').disabled = false
+  document.getElementById('type1').disabled = false
+  document.getElementById('type2').disabled = false
+  document.getElementById('type3').disabled = false
+  document.getElementById('noiseres').disabled = false
+}
 
 
 // Make the generate terrain menu sticky after scroll

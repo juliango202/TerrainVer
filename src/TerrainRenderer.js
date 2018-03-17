@@ -1,11 +1,19 @@
 import convolution from '../libs/webglConvolution.js'
-import { getRandomInt, loadImageData, hexToRgb }  from './utils.js'
+import PositionGenerator from './PositionGenerator.js'
+import { RandomInt, loadImage, loadImageData, hexToRgb, drawStepToCanvas }  from './utils.js'
 
 const DEFAULT_OPTIONS = {
+  debug: false,
   groundImg: '/img/ground.png', 
   backgroundImg: '/img/background.png',
+  avatarsImg: '/img/avatars.png',
   borderWidth: 8,
   borderColor: '#89c53f',
+  nbAvatars: 10,
+  waveDisplacement: 6,
+  waveFps: 20,
+  waveColor: "#2f5a7e",
+  waveDuration: 0,
   seed: Math.random()
 }
 
@@ -19,26 +27,30 @@ export default class TerrainRenderer {
     if( !this.borderColor ) {
       throw new Error("Invalid borderColor value. Should be hex color like #aa3300")
     }
+    if (this.options.seed < 0 || this.options.seed >= 1) {
+      throw new Error('Invalid seed: ' + this.options.seed + ', must be between [0,1).')
+    }
     
+    // Initalize properties
     this.terrainShape = shapeCanvas.getContext('2d').getImageData(0, 0, shapeCanvas.width, shapeCanvas.height)
     this.terr = new ImageData(shapeCanvas.width, shapeCanvas.height)
-
-    // this.posGenerator = new PositionGenerator(this.terrainShape, {
-    //   seed: this.seed
-    // })
+    this.posGenerator = new PositionGenerator(this.terrainShape, { seed: this.options.seed })
+    this.randomGen = new RandomInt(this.options.seed)
 
     // Load image and execute callback when ready
-    this.ready = false
     Promise.all([
+      loadImage(this.options.avatarsImg),
       loadImageData(this.options.groundImg),
       loadImageData(this.options.backgroundImg, { 
         width: this.terr.width,
         height: this.terr.height
       })
-    ]).then(([groundImg, backgroundImg]) => {
+    ]).then(([avatarsImg, groundImg, backgroundImg]) => {
+      this.avatarsImg = avatarsImg
       this.groundImg = groundImg
+      this.groundOffsetX = this.randomGen.next(0, this.groundImg.width) // start at random X
+      this.groundOffsetY = this.randomGen.next(0, this.groundImg.height) // start at random Y
       this.backgroundImg = backgroundImg
-      this.ready = true
       onReady()
     })
   }
@@ -49,33 +61,94 @@ export default class TerrainRenderer {
     bgCanvas.height = this.terr.height
     bgCanvas.getContext('2d').putImageData(this.backgroundImg, 0, 0)
 
-    //this.bgWave.drawSineWave(this.options.wateranim);
+    this.drawWave(bgWaterCanvas, this.terr.width, 160, 15)
   }
   
   //  Draw the terrain on a specific canvas
   drawTerrain (fgCanvas, fgWaterCanvas) {
     this.texturize()
-
+    
     // Draw result to fgCanvas
+    const fgCtx = fgCanvas.getContext('2d')
     fgCanvas.width = this.terr.width;
     fgCanvas.height = this.terr.height;
-    fgCanvas.getContext('2d').putImageData(this.terr, 0, 0)
+    fgCtx.putImageData(this.terr, 0, 0)
+    
+    this.posGenerator.drawSurfacePoints(fgCanvas)
+    this.drawAvatars(fgCtx)
+    
+    this.drawWave(fgWaterCanvas, this.terr.width, 160, 21)
+    
+    if (this.options.debug) drawStepToCanvas(fgCanvas, "canvas-antialias")
   }
+  
+  drawAvatars (fgCtx) {
+    for(var n = 0; n < this.options.nbAvatars; n++) {
+      var pt = this.posGenerator.getSurfacePoint();
+      var AVATAR_WIDTH = 34;
+      var AVATAR_HEIGHT = 32;
+      var avatarchoice = this.randomGen.next(0,15)
+      const translateX = avatarchoice * AVATAR_WIDTH
+      
+      fgCtx.drawImage(this.avatarsImg, avatarchoice * AVATAR_WIDTH, 0, AVATAR_WIDTH, AVATAR_HEIGHT, pt[0] - AVATAR_WIDTH/2, pt[1] - AVATAR_HEIGHT + 5, AVATAR_WIDTH, AVATAR_HEIGHT)
+    }
+  }
+  
+  // Wave code adapted from https://codepen.io/jeffibacache/pen/tobCk
+  drawWave (waveCanvas, width, height, waveOffset) {
+    waveCanvas.width = width
+    waveCanvas.height = height
+    if (waveCanvas.waveAnim) {
+      cancelAnimationFrame(waveCanvas.waveAnim);
+      waveCanvas.waveAnim = undefined;
+    }
+    const context = waveCanvas.getContext('2d');
+    context.strokeStyle = this.options.waveColor;
 
+    const fpsInterval = 1000 / this.options.waveFps
+    const waveDuration = this.options.waveDuration
+    const waveDisplacement = this.options.waveDisplacement
+    
+    let offset = waveOffset;
+    let drawFrame = (elapsed) => {
+      context.clearRect(0, 0, width, height);
+      context.beginPath();
+      context.moveTo(0, waveOffset + Math.sin(offset) * Math.cos(1) + (height >> 1));
+
+      for(let i = 0; i < Math.PI * 2; i += 0.4)
+      {
+        context.lineWidth = 140;
+        context.lineTo((i / Math.PI * 2) * width, waveOffset + Math.sin(i + offset) * waveDisplacement + (height >> 1));  
+      }
+      context.stroke();  
+      offset += (elapsed/700.0);
+    }   
+        
+    // Drawloop is always called when rendering a frame but we draw
+    // the waves with drawFrame() only at a specific framerate.
+    let start = Date.now(), then = start, now
+    let drawLoop = () => {
+      if (waveDuration && now - start > waveDuration) return
+      now = Date.now()
+      waveCanvas.waveAnim = requestAnimationFrame(drawLoop)
+      const elapsed = now - then
+      if (elapsed > fpsInterval) {
+          then = now - (elapsed % fpsInterval)
+          drawFrame(elapsed)
+      }
+    }
+    drawLoop();
+  }
+  
   texturize () {
     const terrainShape = this.terrainShape.data
     const terrain = this.terr.data
     const w = this.terr.width
     const h = this.terr.height
-
     const ground = this.groundImg.data
     const groundW = this.groundImg.width
     const groundH = this.groundImg.height
-    const groundX = getRandomInt(0, groundW) // start at random X
-    const groundY = getRandomInt(0, groundH) // start at random Y
-    
     const borderWidth = this.options.borderWidth
-    const borderColor = this.borderColor
 
     for (var y = 0; y < h; y++) {
       for (var x = 0; x < w; x++) {
@@ -104,14 +177,14 @@ export default class TerrainRenderer {
         
         if (isBorder) {
           // Pixel is on terrain top border
-          terrain[pix] = borderColor.r
-          terrain[1 + pix] = borderColor.g
-          terrain[2 + pix] = borderColor.b
+          terrain[pix] = this.borderColor.r
+          terrain[1 + pix] = this.borderColor.g
+          terrain[2 + pix] = this.borderColor.b
           continue;
         }
         
         // Pixel is inside terrain        
-        const groundPix = ((groundX + x) % groundW + ((groundY + y) % groundH) * groundW) * 4
+        const groundPix = ((this.groundOffsetX + x) % groundW + ((this.groundOffsetY + y) % groundH) * groundW) * 4
         terrain[pix] = ground[groundPix]
         terrain[1 + pix] = ground[1 + groundPix]
         terrain[2 + pix] = ground[2 + groundPix]
@@ -121,11 +194,12 @@ export default class TerrainRenderer {
             // Use alpha from the shape border top pixel for blending this pixel too 
             // This will antialiase the bottom edge of the terrain border
             const alpha = terrainShape[(x + (y - borderWidth) * w) * 4] / 255.0
-            terrain[pix] = terrain[pix] * alpha + borderColor.r * (1.0 - alpha);
-            terrain[1+pix] = terrain[1+pix] * alpha + borderColor.g * (1.0 - alpha);
-            terrain[2+pix] = terrain[2+pix] * alpha + borderColor.b * (1.0 - alpha);
+            terrain[pix] = terrain[pix] * alpha + this.borderColor.r * (1.0 - alpha);
+            terrain[1+pix] = terrain[1+pix] * alpha + this.borderColor.g * (1.0 - alpha);
+            terrain[2+pix] = terrain[2+pix] * alpha + this.borderColor.b * (1.0 - alpha);
         }
       }
     }
-  }  
+  }
 }
+

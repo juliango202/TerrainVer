@@ -2,8 +2,8 @@
  * 
  * This is an adaptation of https://github.com/phoboslab/WebGLImageFilter
  * - Removed color filters and other parts not needed
- * - Updated syntax to ES6
- * - Updated code to run convolution of arbitrary kernel size
+ * - Partially updated syntax to ES6
+ * - Updated code to run convolutions of arbitrary kernel size
  * - A few speed improvements
  * - Added Scale 3X filter
  * 
@@ -354,6 +354,22 @@ const WebGLImageFilter = function () {
     ], false)
   }
   
+  _filter.dilhor = function () {
+    _filter.convolution.call(this, [
+      0, 0, 0,
+      1, 1, 1,
+      0, 0, 0
+    ], true)
+  }
+  
+  _filter.surface = function () {
+    _filter.convolution.call(this, [
+      0, -255, 0,
+      0, 1, 0,
+      0, 0, 0
+    ], false)
+  }
+  
   _filter.threshold = function () {
     _filter.convolution.call(this, [
       0, 0, 0,
@@ -395,6 +411,41 @@ const WebGLImageFilter = function () {
       0.003765,  0.015019,  0.023792,  0.015019,  0.003765
     ])
   }
+  
+  // ----------------------------------------------------------------------------
+  // Line erosion Filter
+  // 
+
+  _filter.surfaceErosion = function () {
+    const pixelSizeX = 1 / _width
+    const pixelSizeY = 1 / _height
+    const program = _compileShader(_filter.surfaceErosion.SHADER)
+    gl.uniform2f(program.uniform.px, pixelSizeX, pixelSizeY)
+    _draw()
+  }
+
+  _filter.surfaceErosion.SHADER = [
+    'precision highp float;',
+    'varying vec2 vUv;',
+    'uniform sampler2D texture;',
+    'uniform vec2 px;',
+
+    'void main(void) {',
+      'vec4 A = texture2D(texture, vUv - px);', // top left
+      'vec4 B = texture2D(texture, vec2(vUv.x - px.x, vUv.y) );', // mid left
+      'vec4 C = texture2D(texture, vec2(vUv.x - px.x, vUv.y + px.y) );', // bottom left
+      
+      'vec4 D = texture2D(texture, vec2(vUv.x + px.x, vUv.y - px.y));', // top right
+      'vec4 E = texture2D(texture, vec2(vUv.x + px.x, vUv.y) );', // mid right
+      'vec4 F = texture2D(texture, vUv + px );', // bottom right
+
+      'if ((A.r == 0.0 && B.r == 0.0 && C.r == 0.0) || (D.r == 0.0 && E.r == 0.0 && F.r == 0.0)) {',
+        'gl_FragColor = vec4(0,0,0,0);',
+      '} else {',
+        'gl_FragColor = texture2D(texture, vUv);',
+      '}',
+    '}'
+  ].join('\n')
 
   // ----------------------------------------------------------------------------
   // Scale 3X Filter

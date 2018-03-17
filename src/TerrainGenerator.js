@@ -180,14 +180,19 @@ export default class TerrainGenerator {
   }
   
   magnify () {
-    const tempCanvas = document.createElement("canvas")
+    const tempCanvas = document.createElement('canvas')
     drawStepToCanvas(this.terr, tempCanvas)
     return hqx(tempCanvas, 2)
   }
 
   // Generate a terrain and return a html Canvas object representing it(red on black image)
   generate (seed) {
-    if (!this.ready) throw new Error('generator not yet ready')
+    if (!this.ready) {
+      throw new Error('generator not yet ready')
+    }
+    if (seed < 0 || seed >= 1) {
+      throw new Error('Invalid seed: ' + seed + ', must be between [0,1).')
+    }
     const startTime = new Date()
 
     // Start with a copy of the terrain type image

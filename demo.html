@@ -133,6 +133,9 @@
       font-size: 1.6em; 
       padding: 18px 5px 18px 10px;
     }
+    #gen:disabled {
+      color: #f00;
+    }
     
     #result {
       position: relative;
@@ -210,7 +213,7 @@
   <form name="genform" id="genform">
     <table id="gen-tb">
       <tr>
-        <th rowspan="2"><button id="gen">Generate &#8634;</button></th>
+        <th rowspan="2"><button id="gen" disabled>Generate &#8634;</button></th>
         <th>Noise resolution:</th>
         <th>Terrain type:</th>
       </tr>

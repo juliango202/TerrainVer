@@ -66,10 +66,10 @@ export function drawStepToCanvas(src, dest, scaleFactor) {
   }
 }
 
-// Load html img data into array(optionnaly scale it to given size)
+// Load an html img into an ImageData array(optionnaly scale it to given size)
 const imageDataCanvas = document.createElement('canvas')
 const context = imageDataCanvas.getContext('2d')
-function getHtmlImageData (img, scaleToSize) {
+export function getHtmlImageData (img, scaleToSize) {
   if (!scaleToSize) {
     scaleToSize = {
       width: img.width,
@@ -95,23 +95,6 @@ export function loadImage (src) {
       img.onload = () => {
         imageCache.set(imageId, img)
         resolve(img)
-      }
-    })
-}
-
-// Load an image from its URL, optionaly resize it, and return an ImageData array 
-const imageDataCache = new Map()
-export function loadImageData (src, scaleToSize) {
-  const imageId = `${src}`
-  return imageDataCache.has(imageId)
-    ? Promise.resolve(imageDataCache.get(imageId))
-    : new Promise((resolve) => {
-      const img = new Image()
-      img.src = src
-      img.onload = () => {
-        const imageData = getHtmlImageData(img, scaleToSize)
-        imageDataCache.set(imageId, imageData)
-        resolve(imageData)
       }
     })
 }

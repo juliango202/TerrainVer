@@ -1,12 +1,12 @@
 import convolution from '../libs/webglConvolution.js'
 import PositionGenerator from './PositionGenerator.js'
-import { RandomInt, loadImage, loadImageData, hexToRgb, drawStepToCanvas }  from './utils.js'
+import { RandomInt, loadImage, getHtmlImageData, hexToRgb, drawStepToCanvas }  from './utils.js'
 
 const DEFAULT_OPTIONS = {
   debug: false,
-  groundImg: '/img/ground.png', 
-  backgroundImg: '/img/background.png',
-  avatarsImg: '/img/avatars.png',
+  groundImg: null, 
+  backgroundImg: null,
+  avatarsImg: null,
   borderWidth: 8,
   borderColor: '#89c53f',
   nbAvatars: 10,
@@ -20,7 +20,17 @@ const DEFAULT_OPTIONS = {
 // Generate terrain graphics from a terrain shape
 export default class TerrainRenderer {
 
-  constructor (shapeCanvas, opts, onReady) {
+  // Factory method to create a TerrainRenderer from img urls instead of img objects
+  static async fromImgUrl (shapeCanvas, opts) {    
+    const imgOpts = Object.assign({}, opts, { 
+      groundImg: await loadImage(opts.groundImg),
+      backgroundImg: await loadImage(opts.backgroundImg),
+      avatarsImg: await loadImage(opts.avatarsImg) 
+    })
+    return new TerrainRenderer (shapeCanvas, imgOpts)
+   }
+   
+  constructor (shapeCanvas, opts) {
     // Check option values
     this.options = Object.assign({}, DEFAULT_OPTIONS, opts)
     this.borderColor = hexToRgb(this.options.borderColor)
@@ -30,42 +40,34 @@ export default class TerrainRenderer {
     if (this.options.seed < 0 || this.options.seed >= 1) {
       throw new Error('Invalid seed: ' + this.options.seed + ', must be between [0,1).')
     }
+    if (!this.options.groundImg || !this.options.backgroundImg || !this.options.avatarsImg) {
+      throw new Error("Required groundImg, backgroundImg, and avatarsImg options must be HTMLImageElement(or CanvasImageSource)")
+    }
     
     // Initalize properties
     this.terrainShape = shapeCanvas.getContext('2d').getImageData(0, 0, shapeCanvas.width, shapeCanvas.height)
     this.terr = new ImageData(shapeCanvas.width, shapeCanvas.height)
     this.posGenerator = new PositionGenerator(this.terrainShape, { seed: this.options.seed })
     this.randomGen = new RandomInt(this.options.seed)
-
-    // Load image and execute callback when ready
-    Promise.all([
-      loadImage(this.options.avatarsImg),
-      loadImageData(this.options.groundImg),
-      loadImageData(this.options.backgroundImg, { 
-        width: this.terr.width,
-        height: this.terr.height
-      })
-    ]).then(([avatarsImg, groundImg, backgroundImg]) => {
-      this.avatarsImg = avatarsImg
-      this.groundImg = groundImg
-      this.groundOffsetX = this.randomGen.next(0, this.groundImg.width) // start at random X
-      this.groundOffsetY = this.randomGen.next(0, this.groundImg.height) // start at random Y
-      this.backgroundImg = backgroundImg
-      onReady()
-    })
-  }
-
-  // Draw the background on a specific canvas
-  drawBackground (bgCanvas, bgWaterCanvas) { 
-    bgCanvas.width  = this.terr.width
-    bgCanvas.height = this.terr.height
-    bgCanvas.getContext('2d').putImageData(this.backgroundImg, 0, 0)
-
-    this.drawWave(bgWaterCanvas, this.terr.width, 160, 15)
+    
+    // Read the background and ground images into ImageData objects
+    this.background = getHtmlImageData(this.options.backgroundImg, { width: this.terr.width, height: this.terr.height })
+    this.ground = getHtmlImageData(this.options.groundImg)
+    this.groundOffsetX = this.randomGen.next(0, this.ground.width) // start at random X
+    this.groundOffsetY = this.randomGen.next(0, this.ground.height) // start at random Y
   }
   
-  //  Draw the terrain on a specific canvas
-  drawTerrain (fgCanvas, fgWaterCanvas) {
+  // Draw the terrain on specific canvas
+  // NOTE: in a real game, background and foreground would be drawn separately at different times
+  drawTerrain (bgCanvas, bgWaterCanvas, fgCanvas, fgWaterCanvas) {
+    // Draw background
+    bgCanvas.width  = this.terr.width
+    bgCanvas.height = this.terr.height
+    bgCanvas.getContext('2d').putImageData(this.background, 0, 0)
+
+    this.drawWave(bgWaterCanvas, this.terr.width, 160, 15)
+    
+    // Draw terrain
     this.texturize()
     
     // Draw result to fgCanvas
@@ -90,7 +92,7 @@ export default class TerrainRenderer {
       var avatarchoice = this.randomGen.next(0,15)
       const translateX = avatarchoice * AVATAR_WIDTH
       
-      fgCtx.drawImage(this.avatarsImg, avatarchoice * AVATAR_WIDTH, 0, AVATAR_WIDTH, AVATAR_HEIGHT, pt[0] - AVATAR_WIDTH/2, pt[1] - AVATAR_HEIGHT + 5, AVATAR_WIDTH, AVATAR_HEIGHT)
+      fgCtx.drawImage(this.options.avatarsImg, avatarchoice * AVATAR_WIDTH, 0, AVATAR_WIDTH, AVATAR_HEIGHT, pt[0] - AVATAR_WIDTH/2, pt[1] - AVATAR_HEIGHT + 5, AVATAR_WIDTH, AVATAR_HEIGHT)
     }
   }
   
@@ -145,9 +147,9 @@ export default class TerrainRenderer {
     const terrain = this.terr.data
     const w = this.terr.width
     const h = this.terr.height
-    const ground = this.groundImg.data
-    const groundW = this.groundImg.width
-    const groundH = this.groundImg.height
+    const ground = this.ground.data
+    const groundW = this.ground.width
+    const groundH = this.ground.height
     const borderWidth = this.options.borderWidth
 
     for (var y = 0; y < h; y++) {

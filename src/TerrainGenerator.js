@@ -1,25 +1,34 @@
 import convolution from '../libs/webglConvolution.js'
 import { perlin2, seed as noiseSeed } from '../libs/noiseGen.js'
-import { loadImageData, drawStepToCanvas } from './utils.js'
+import { loadImage, getHtmlImageData, drawStepToCanvas } from './utils.js'
 
 const DEFAULT_OPTIONS = {
   debug: false,
   width: 1024,
   height: 612,
-  terrainTypeImg: '/img/type-1.png', // URL to an img of terrain type
   noiseResolution: 35,
   noiseResolutionBlack: 18,
-  noiseThreshold: 20.0
+  noiseThreshold: 20.0,
+  terrainTypeImg: null
 }
 
 // Generate random terrain shape corresponding to a terrain type
 export default class TerrainGenerator {
 
-  constructor (opts, onReady) {
+  // Factory method to create a TerrainGenerator from an img url instead of an img object
+  static async fromImgUrl (opts) {
+    const imgOpts = Object.assign({}, opts, { terrainTypeImg: await loadImage(opts.terrainTypeImg) })
+    return new TerrainGenerator (imgOpts)
+   }
+   
+  constructor (opts) {
     // Check options values
     this.options = Object.assign({}, DEFAULT_OPTIONS, opts)
     if (this.options.width % 2 != 0 || this.options.height % 2) {
       throw new Error("Terrain width and height should be even")
+    }
+    if (!this.options.terrainTypeImg) {
+      throw new Error("Required terrainTypeImg option must be an HTMLImageElement(or a CanvasImageSource)")
     }
     
     // We will work on images 4 times smaller than the final resolution
@@ -27,26 +36,17 @@ export default class TerrainGenerator {
     this.w = this.options.width / 2
     this.h = this.options.height / 2
     this.terr = new ImageData(this.w, this.h)
-    // Load image and execute callback when ready
-    this.ready = false
-    loadImageData(this.options.terrainTypeImg, {
-      width: this.w,
-      height: this.h
-    }).then(terrainTypeImg => {
-      this.terrainTypeImg = terrainTypeImg
-      this.terrainTypePoints = this.loadTerrainTypePoints()
-      this.ready = true
-      onReady()
-    })
+    this.terrainType = getHtmlImageData(this.options.terrainTypeImg, { width: this.w, height: this.h })
+    this.terrainTypePoints = this.loadTerrainTypePoints()
   }
-
+  
   // Compute and return the following:
   // fgPoints : An array of points (x,y) representing the core of the terrain
   // bgPoints: An array of points (x,y) at the left, right, and top border representing the background
   //           we don't include the bottom border because we want holes at the bottom to be filled by terrain
   loadTerrainTypePoints (threshold = 100) {
     let points = { fg: [], bg: [] }
-    const td = this.terrainTypeImg.data
+    const td = this.terrainType.data
     for (let x = 0; x < this.w; x++) {
       for (let y = 0; y < this.h; y++) {
         if (td[(x + y * this.w) * 4] < threshold && (
@@ -187,16 +187,13 @@ export default class TerrainGenerator {
 
   // Generate a terrain and return a html Canvas object representing it(red on black image)
   generate (seed) {
-    if (!this.ready) {
-      throw new Error('generator not yet ready')
-    }
     if (seed < 0 || seed >= 1) {
       throw new Error('Invalid seed: ' + seed + ', must be between [0,1).')
     }
     const startTime = new Date()
 
     // Start with a copy of the terrain type image
-    this.terr.data.set(this.terrainTypeImg.data)
+    this.terr.data.set(this.terrainType.data)
     if (this.options.debug) drawStepToCanvas(this.terr, "canvas-terrain")
 
     // Extend terrain accross area defined by random Perlin noise

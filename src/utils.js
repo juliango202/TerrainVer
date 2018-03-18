@@ -3,14 +3,22 @@
 // Adapted from: https://gist.github.com/blixt/f17b47c62508be59987b
 export class RandomInt {
   constructor (seed) {
-    this.seed = seed % 2147483647
-    if (this.seed <= 0) this.seed += 2147483646
+    if (seed < 0 || seed >= 1) {
+      throw new Error('Invalid seed: ' + seed + ', must be between [0,1).')
+    }
+    this.seed = seed == 0 
+      ? 2147483646
+      : Math.floor(seed * Math.pow(2, 53)) % 2147483647
   }
   
-  next (min, max) {
+  nextBetween (min, max) {
     this.seed = this.seed * 16807 % 2147483647;
     const randomFloat = (this.seed - 1) / 2147483646
     return Math.floor(randomFloat * (max - min + 1)) + min
+  }
+  
+  next () {
+    return this.nextBetween(0, Math.pow(2, 53) - 1)
   }
 }
 

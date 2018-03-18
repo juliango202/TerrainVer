@@ -41,9 +41,8 @@ export default class TerrainGenerator {
   }
   
   // Compute and return the following:
-  // fgPoints : An array of points (x,y) representing the core of the terrain
-  // bgPoints: An array of points (x,y) at the left, right, and top border representing the background
-  //           we don't include the bottom border because we want holes at the bottom to be filled by terrain
+  // fgPoints : An array of points (x,y) at the contour of the core of the terrain
+  // bgPoints: An array of points (x,y) at the border representing the background
   loadTerrainTypePoints (threshold = 100) {
     let points = { fg: [], bg: [] }
     const td = this.terrainType.data
@@ -58,7 +57,8 @@ export default class TerrainGenerator {
         } else if (td[(x + y * this.w) * 4] < threshold && td[2 + (x + y * this.w) * 4] < threshold && (
             x === 0 ||
             y === 0 ||
-            x === this.w - 1)) {
+            x === this.w - 1 ||
+            y === this.h - 1)) {
           points.bg.push([x, y])
         }
       }
@@ -194,7 +194,7 @@ export default class TerrainGenerator {
 
     // Start with a copy of the terrain type image
     this.terr.data.set(this.terrainType.data)
-    if (this.options.debug) drawStepToCanvas(this.terr, "canvas-terrain")
+    if (this.options.debug) drawStepToCanvas(this.terr, "canvas-terrain")      
 
     // Extend terrain accross area defined by random Perlin noise
     this.perlinNoise(seed)

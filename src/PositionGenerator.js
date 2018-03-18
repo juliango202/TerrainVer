@@ -5,8 +5,7 @@ const DEFAULT_OPTIONS = {
   marginTop: 40,  // don't generate position too high
   marginRight: 1,
   marginBottom: 60,  // don't generate position in water
-  marginLeft: 1,
-  seed: Math.random()
+  marginLeft: 1
 }
 
 // Use Halton sequence to generate positions
@@ -36,9 +35,6 @@ export default class PositionGenerator {
     timer.start("PositionGenerator")
     // Check options values
     this.options = Object.assign({}, DEFAULT_OPTIONS, opts)
-    if (this.options.seed < 0 || this.options.seed >= 1) {
-      throw new Error('Invalid seed: ' + this.options.seed + ', must be between [0,1).')
-    }
     
     const surfaceImg = new ImageData(terrainShape.width, terrainShape.height)
     convolution(['surface','threshold','surfaceErosion','surfaceErosion','surfaceErosion'], terrainShape, surfaceImg)    
@@ -74,10 +70,10 @@ export default class PositionGenerator {
   }
 
   // Return next random surface point
-  getSurfacePoint () {
+  getSurfacePoint (seed) {
     let nextRandomNb = halton(this.haltonIndex++, 2)
-    // randomize halton sequence by using the random seed as an offset
-    nextRandomNb = (nextRandomNb + this.options.seed) % 1.0
+    // randomize halton sequence by using the seed param as an offset(seed should be between [0,1))
+    nextRandomNb = (nextRandomNb + seed) % 1.0
     return this.surfacePoints[Math.floor(nextRandomNb * this.surfacePoints.length)]
   }
   

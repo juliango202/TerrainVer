@@ -1,6 +1,6 @@
 import convolution from '../libs/webglConvolution.js'
 import PositionGenerator from './PositionGenerator.js'
-import { RandomInt, loadImage, getHtmlImageData, hexToRgb, drawStepToCanvas }  from './utils.js'
+import { RandomInt, loadImage, getHtmlImageData, drawStepToCanvas, hexToRgb }  from './utils.js'
 
 const DEFAULT_OPTIONS = {
   debug: false,
@@ -13,8 +13,7 @@ const DEFAULT_OPTIONS = {
   waveDisplacement: 6,
   waveFps: 20,
   waveColor: "#2f5a7e",
-  waveDuration: 0,
-  seed: Math.random()
+  waveDuration: 0
 }
 
 // Generate terrain graphics from a terrain shape
@@ -37,9 +36,6 @@ export default class TerrainRenderer {
     if( !this.borderColor ) {
       throw new Error("Invalid borderColor value. Should be hex color like #aa3300")
     }
-    if (this.options.seed < 0 || this.options.seed >= 1) {
-      throw new Error('Invalid seed: ' + this.options.seed + ', must be between [0,1).')
-    }
     if (!this.options.groundImg || !this.options.backgroundImg || !this.options.avatarsImg) {
       throw new Error("Required groundImg, backgroundImg, and avatarsImg options must be HTMLImageElement(or CanvasImageSource)")
     }
@@ -47,19 +43,21 @@ export default class TerrainRenderer {
     // Initalize properties
     this.terrainShape = shapeCanvas.getContext('2d').getImageData(0, 0, shapeCanvas.width, shapeCanvas.height)
     this.terr = new ImageData(shapeCanvas.width, shapeCanvas.height)
-    this.posGenerator = new PositionGenerator(this.terrainShape, { seed: this.options.seed })
-    this.randomGen = new RandomInt(this.options.seed)
+    this.posGenerator = new PositionGenerator(this.terrainShape)
     
     // Read the background and ground images into ImageData objects
     this.background = getHtmlImageData(this.options.backgroundImg, { width: this.terr.width, height: this.terr.height })
     this.ground = getHtmlImageData(this.options.groundImg)
-    this.groundOffsetX = this.randomGen.next(0, this.ground.width) // start at random X
-    this.groundOffsetY = this.randomGen.next(0, this.ground.height) // start at random Y
   }
   
   // Draw the terrain on specific canvas
   // NOTE: in a real game, background and foreground would be drawn separately at different times
-  drawTerrain (bgCanvas, bgWaterCanvas, fgCanvas, fgWaterCanvas) {
+  drawTerrain (seed, bgCanvas, bgWaterCanvas, fgCanvas, fgWaterCanvas) {
+    if (seed < 0 || seed >= 1) {
+      throw new Error('Invalid seed: ' + seed + ', must be between [0,1).')
+    }
+    const randomGen = new RandomInt(seed)
+    
     // Draw background
     bgCanvas.width  = this.terr.width
     bgCanvas.height = this.terr.height
@@ -68,6 +66,8 @@ export default class TerrainRenderer {
     this.drawWave(bgWaterCanvas, this.terr.width, 160, 15)
     
     // Draw terrain
+    this.groundOffsetX = randomGen.nextBetween(0, this.ground.width) // start at random X
+    this.groundOffsetY = randomGen.nextBetween(0, this.ground.height) // start at random Y
     this.texturize()
     
     // Draw result to fgCanvas
@@ -77,23 +77,19 @@ export default class TerrainRenderer {
     fgCtx.putImageData(this.terr, 0, 0)
     
     this.posGenerator.drawSurfacePoints(fgCanvas)
-    this.drawAvatars(fgCtx)
+    
+    // Draw avatars
+    for(var n = 0; n < this.options.nbAvatars; n++) {
+      var pt = this.posGenerator.getSurfacePoint(seed);
+      var AVATAR_WIDTH = 34;
+      var AVATAR_HEIGHT = 32;
+      var avatarchoice = randomGen.nextBetween(0,15)
+      fgCtx.drawImage(this.options.avatarsImg, avatarchoice * AVATAR_WIDTH, 0, AVATAR_WIDTH, AVATAR_HEIGHT, pt[0] - AVATAR_WIDTH/2, pt[1] - AVATAR_HEIGHT + 5, AVATAR_WIDTH, AVATAR_HEIGHT)
+    }
     
     this.drawWave(fgWaterCanvas, this.terr.width, 160, 21)
     
     if (this.options.debug) drawStepToCanvas(fgCanvas, "canvas-antialias")
-  }
-  
-  drawAvatars (fgCtx) {
-    for(var n = 0; n < this.options.nbAvatars; n++) {
-      var pt = this.posGenerator.getSurfacePoint();
-      var AVATAR_WIDTH = 34;
-      var AVATAR_HEIGHT = 32;
-      var avatarchoice = this.randomGen.next(0,15)
-      const translateX = avatarchoice * AVATAR_WIDTH
-      
-      fgCtx.drawImage(this.options.avatarsImg, avatarchoice * AVATAR_WIDTH, 0, AVATAR_WIDTH, AVATAR_HEIGHT, pt[0] - AVATAR_WIDTH/2, pt[1] - AVATAR_HEIGHT + 5, AVATAR_WIDTH, AVATAR_HEIGHT)
-    }
   }
   
   // Wave code adapted from https://codepen.io/jeffibacache/pen/tobCk

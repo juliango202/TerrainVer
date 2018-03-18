@@ -2,15 +2,10 @@ import TerrainGenerator from './src/TerrainGenerator.js'
 import TerrainRenderer from './src/TerrainRenderer.js'
 import { timer } from './src/utils.js'
 
-
-// This method just waits a bit to let the UI refresh
-// Ideally terrain stuff should be in a web worker instead but workers don't support ES6 modules yet
-function waitForUi() {
-  return new Promise(r => setTimeout(r, 20));
-}
-
-
+const maxTerrainWidth = 2048
+const clientWidth = document.documentElement.clientWidth
 let options = {
+  w: Math.min(clientWidth, maxTerrainWidth),
   seed: Math.random(),
   noise: 35,
   type: 'type-1',
@@ -20,12 +15,14 @@ let options = {
 // Instantiate a new TerrainGenerator
 let terrainGenerator = null 
 async function newTerrainGenerator() {
-  disableForm ()
+  toggleForm (false)
   await waitForUi()
+  const width = options.w
+  const height = Math.floor (width * 0.625)
   terrainGenerator = await TerrainGenerator.fromImgUrl({
     debug: true, 
-    width: 1536, 
-    height: 960,
+    width: width - width % 2, // Make sure width is even
+    height: height - height % 2, // Make sure height is even
     terrainTypeImg: '/img/' + options.type + '.png',
     noiseResolution: options.noise
   })
@@ -36,11 +33,9 @@ async function newTerrainGenerator() {
 // Generate a new terrainShape
 let terrainShape = null
 async function generateTerrain () {
-  disableForm ()
+  toggleForm (false)
   await waitForUi()
   terrainShape = terrainGenerator.generate(options.seed)
-  document.getElementById('bgcanvas').parentElement.style.width = terrainShape.width + "px"
-  document.getElementById('bgcanvas').parentElement.style.height = terrainShape.height + "px"
   renderTerrain ()  
 }
 
@@ -48,7 +43,7 @@ async function generateTerrain () {
 // Render the current terrainShape
 async function renderTerrain () {
   if( !terrainShape ) return;
-  disableForm ()
+  toggleForm (false)
   await waitForUi()
   const graphicsRenderer = await TerrainRenderer.fromImgUrl(terrainShape, {
     debug: true, 
@@ -66,41 +61,32 @@ async function renderTerrain () {
   )
   
   if (history.pushState) {
-    const optionsStr = JSON.stringify(options)
-    console.log('Terrain config is ' + optionsStr)
-    const newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?terrain=' + btoa(optionsStr);
-    window.history.pushState({path: newurl},'',newurl)
+    // display current terrain config to querystring for linking
+    const url = window.location.protocol + "//" + window.location.host + window.location.pathname + '?terrain=' + btoa(JSON.stringify(options));
+    window.history.pushState({path: url}, '', url)
   }
   
   document.getElementById('timing').innerHTML = timer.toString()
-  enableForm ()
+  toggleForm (true)
 }
+
 
 // Demo form management
-function disableForm () {
-  document.getElementById('gen').disabled = true
-  document.getElementById('type1').disabled = true
-  document.getElementById('type2').disabled = true
-  document.getElementById('type3').disabled = true
-  document.getElementById('noiseres').disabled = true
+const formElts = ['gen', 'type1', 'type2', 'type3', 'noiseres']
+function toggleForm (enabled) {
+  formElts.map(elt => document.getElementById(elt).disabled = !enabled)
 }
 
-function enableForm () {
-  document.getElementById('gen').disabled = false
-  document.getElementById('type1').disabled = false
-  document.getElementById('type2').disabled = false
-  document.getElementById('type3').disabled = false
-  document.getElementById('noiseres').disabled = false
+// This method just waits a bit to let the UI refresh
+// Ideally terrain stuff should be in a web worker instead but workers don't support ES6 modules yet
+function waitForUi() {
+  return new Promise(r => setTimeout(r, 20));
 }
 
 function pageInit () {
+  
   // document.getElementById('showsurface').onchange = function() {
   //   showsurface = this.checked;
-  //   newTerrainGenerator();
-  // }
-  // 
-  // document.getElementById('wateranim').onchange = function() {
-  //   wateranim = this.checked;
   //   newTerrainGenerator();
   // }
   
@@ -127,6 +113,22 @@ function pageInit () {
     return false;
   }
   
+  // Load options from querystring config if any
+  if (window.location.search.substring(0, 9) === '?terrain=') {
+    options = JSON.parse(atob(window.location.search.substring(9)))
+    options.w = Math.min(options.w, maxTerrainWidth)
+  }
+  
+  // Adjust html size to match querystring config width
+  if (options.w > clientWidth) {
+    ['bgcanvas', 'bgwater', 'fgcanvas', 'fgwater'].map(canvas => document.getElementById(canvas).style.maxWidth = "100%")
+  } else if (options.w < clientWidth) {
+  const resultDivStyle = document.getElementById('bgcanvas').parentElement.style
+  resultDivStyle.width = options.w + "px"
+  resultDivStyle.height = Math.floor (options.w * 0.625) + "px"
+  resultDivStyle.paddingBottom = "0px"
+  }
+  
   // Make the generate terrain menu sticky after scroll
   const genform = document.getElementById("genform")
   const initOffset = genform.offsetTop
@@ -134,10 +136,6 @@ function pageInit () {
     genform.classList.toggle("sticky", window.pageYOffset >= initOffset)
   }
   
-  // Load options from querystring config if any
-  if (window.location.search.substring(0, 9) === '?terrain=') {
-    options = JSON.parse(atob(window.location.search.substring(9)))
-  }
   newTerrainGenerator()
 }
 

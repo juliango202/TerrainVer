@@ -13,7 +13,7 @@ const DEFAULT_OPTIONS = {
   waveDisplacement: 6,
   waveFps: 20,
   waveColor: "#2f5a7e",
-  waveDuration: 0
+  waveDuration: 60000  // default to one minute, set to 0 for infinite
 }
 
 // Generate terrain graphics from a terrain shape

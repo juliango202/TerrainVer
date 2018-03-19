@@ -123,10 +123,10 @@ function pageInit () {
   if (options.w > clientWidth) {
     ['bgcanvas', 'bgwater', 'fgcanvas', 'fgwater'].map(canvas => document.getElementById(canvas).style.maxWidth = "100%")
   } else if (options.w < clientWidth) {
-  const resultDivStyle = document.getElementById('bgcanvas').parentElement.style
-  resultDivStyle.width = options.w + "px"
-  resultDivStyle.height = Math.floor (options.w * 0.625) + "px"
-  resultDivStyle.paddingBottom = "0px"
+    const resultDivStyle = document.getElementById('bgcanvas').parentElement.style
+    resultDivStyle.width = options.w + "px"
+    resultDivStyle.height = Math.floor (options.w * 0.625) + "px"
+    resultDivStyle.paddingBottom = "0px"
   }
   
   // Make the generate terrain menu sticky after scroll

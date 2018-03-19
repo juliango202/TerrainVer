@@ -76,7 +76,7 @@ export default class TerrainRenderer {
     fgCanvas.height = this.terr.height;
     fgCtx.putImageData(this.terr, 0, 0)
     
-    this.posGenerator.drawSurfacePoints(fgCanvas)
+    //this.posGenerator.drawSurfacePoints(fgCanvas)
     
     // Draw avatars
     for(var n = 0; n < this.options.nbAvatars; n++) {
@@ -89,7 +89,7 @@ export default class TerrainRenderer {
     
     this.drawWave(fgWaterCanvas, this.terr.width, 160, 21)
     
-    if (this.options.debug) drawStepToCanvas(fgCanvas, "canvas-antialias")
+    if (this.options.debug) drawStepToCanvas(fgCanvas, "canvas-render")
   }
   
   // Wave code adapted from https://codepen.io/jeffibacache/pen/tobCk

@@ -73,8 +73,7 @@
     p {
       text-align:left;
       font-size:100%;
-      margin: 1em auto;
-      max-width: 45em;
+      margin: 1em 0;
     }
 
     p.lead {
@@ -104,9 +103,23 @@
     .pull-left {float:left; margin:0.5em 2em 1em 0;}
     .pull-right {float:right; margin:0.5em 0 1em 2em;}
 
-    @media (max-width:500px) {
+    @media (max-width:1024px) {
+      body {font-size:100%;}
+    }
+    
+    @media (max-width:640px) {
       body {font-size:80%;}
-      img {max-width:100% !important; height:auto !important; float:none !important;}
+      img, canvas {
+        max-width:100% !important; 
+        height:auto !important; 
+        float:none !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+      }
+    }
+    
+    input[type=range] {
+      vertical-align: middle;
     }
 
     .terrtype {
@@ -117,6 +130,10 @@
       background: #fff;
       border-bottom: 1px solid #888;
       margin: 0 10px;
+    }
+    
+    #avatarsform {
+      text-align: left;
     }
     
     #gen-tb {
@@ -170,10 +187,11 @@
     }
     
     canvas {
-      image-rendering: pixelated;
+      /*image-rendering: pixelated;*/
+      max-width: 100%;
     }
     .step-canvas {
-      max-width: 600px;
+      max-width: 50%;
     }
     
     .sticky {
@@ -185,6 +203,19 @@
     .sticky + p {
       margin-top: 101px;
     }
+    
+    .textbloc {
+      margin: 0 auto;
+      max-width: 90%;
+    }
+    .textbloc.limitedwidth {
+      max-width: 45em;
+    }
+    
+    div.clear {
+      clear:both;
+      margin-bottom: 2em;
+    }
   </style>
   
 </head>
@@ -192,28 +223,30 @@
 <body>
 
   <h1>TerrainVer<br><i class="normal">Worms-style cartoon terrain in JavaScript</i></h1>
-
-  <p>
-  Last year we started a for-the-fun project with some colleagues: a worms-clone in JavaScript. While we didn't get very far, I had good results working on terrain generation and I want to present them here.
-  </p>
-  <p>
-  First let me acknowledge that my approach is based on 
-  <a href="https://gamedev.stackexchange.com/a/20606">this great answer by bummzack</a>, basically it suggests to start with some Perlin noise and go from there.
-  I suspect there is a better <i>vectorial</i> way to do this, but this solution seemed relatively simple and so 
-  a good fit for my weekend project.
-  </p>
-  <p>
-  Without waiting any further let me show you the result and then I'll explain 
-  how to achieve it:
-  </p>
-  
+  <div class="textbloc limitedwidth">
+    <p>
+    Last year we started a for-the-fun project with some colleagues: a worms-clone in JavaScript. While we didn't get very far, I had good results working on terrain generation and I want to present them here.
+    </p>
+    <p>
+    First let me acknowledge that my approach is based on 
+    <a href="https://gamedev.stackexchange.com/a/20606">this great answer by bummzack</a>, basically it suggests to start with some Perlin noise and go from there.
+    I suspect there is a better <i>vectorial</i> way to do this, but this solution seemed relatively simple and so 
+    a good fit for my weekend project.
+    </p>
+    <p>
+    Without waiting any further let me show you the result and then I'll explain 
+    how to achieve it:
+    </p>
+  </div>
   
   <div id="result">
-    <canvas id="bgcanvas" style="position: absolute; left: 0; top: 0; z-index: 10;"></canvas>
-    <canvas id="bgwater" style="position: absolute; left: 0; bottom: 0; z-index: 11;opacity: 0.24;"></canvas>
-    <canvas id="fgcanvas" style="position: absolute; left: 0; top: 0; z-index: 12;"></canvas>
-    <canvas id="fgwater" style="position: absolute; left: 0; bottom: 0; z-index: 13;opacity: 0.45;"></canvas>
+    <canvas id="bgcanvas" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 10;"></canvas>
+    <canvas id="bgwater" style="position: absolute; left: 0; bottom: 0; right: 0; z-index: 11;opacity: 0.24;"></canvas>
+    <canvas id="fgcanvas" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 12;"></canvas>
+    <canvas id="fgwater" style="position: absolute; left: 0; bottom: 0; right: 0; z-index: 13;opacity: 0.45;"></canvas>
   </div>
+  
+
   <form name="genform" id="genform">
     <table id="gen-tb">
       <tr>
@@ -246,207 +279,170 @@
       <label for="wateranim">Water anim</label>
     </div>
   </form>
-
-  <p>
+  <p style="text-align: center">
     <i>You can use the controls above to generate another terrain at random, or change the terrain type.</i>
   </p>
-    <p>
-    Pretty neat, huh? Graphics come from my colleague <a href="https://github.com/pOxaes">pOxaes</a> plus some Android blob smileys.<br>
-    The whole process is not very hard, but I had to find a couple of tricks to make everything works. I'll detail all the steps below:
-  </p>
-
-  <h3>Part I: Terrain generation</h3>
-  <table class="steps-tb">
-  <tr>
-    <td><canvas class="step-canvas" id="canvas-terrain"></canvas></td>
-    <td>
-      <h6>Step 1</h6>
-      <p>
-        First you start with the terrain type. <br>
-        This is a low-resolution image that you can create with any image editor. Notice that there are three zones:
-        <ul>
-        <li>The <i>blue</i> part is the heart of the terrain, meaning it should always show up as terrain in the final mask.</li>
-        <li>The <i>black</i> part is the terrain contour, this is where we want our algorithm to generate random hollows and bumps.</li>
-        <li>The <i>red</i> part is the zone that should be outside the terrain in the final mask.</li>
-        </ul>
-      </p>
-      <p>
-        Initially I had only 2 zones(inside/outside) but it turned out to be difficult to generate hollows and bumps that would not encroach far into the outside zone.
-        The additional <i>black</i> zone is used to contain the encroachment.
-      </p>
-    </td>
-  </tr>
-  <tr>
-    <td><canvas class="step-canvas" id="canvas-perlin"></canvas></td>
-    <td>
-      <h6>Step 2</h6>
-      <p>
-        Next as suggested in <a href="https://gamedev.stackexchange.com/a/20606">bummzack answer</a> you add some <a href="https://en.wikipedia.org/wiki/Perlin_noise">Perlin noise</a>.<br>
-      </p>
-      <p>
-        This generates continuous "wrinkles" of different size all over the image. 
-        I used this <a href="https://github.com/josephg/noisejs">JavaScript library by josephg</a> to generate two layers of noise:
-        <ul>
-        <li>The first and main layer covers the whole image and will be the basis for the hollows and bumps of our terrain.
-        You can change the noise resolution with the slider above, I encourage you to try a smaller resolution to see the difference.</li>
-        <li>The second layer is set at a very small resolution and covers only the <i>red</i> zone, it will prevent the hollows and bumps to encroach too much in this zone.</li>
-        </ul>
-      </p>
-    </td>
-  </tr>
-  <tr>
-    <td><canvas class="step-canvas" id="canvas-fperlin"></canvas></td>
-    <td>
-      <h6>Step 3</h6>
-      <p>
-        In this step we <i>paint</i> the terrain on top of the noise.
-      </p>
-      <p>
-        We do this by applying the flood fill algorithm(the <i>bucket tool</i> in a paint program) 
-        from all the points in our <i>blue</i> zone. For a fast way to do this, I translated to JavaScript this 
-        <a href="http://lodev.org/cgtutor/floodfill.html#Scanline_Floodfill_Algorithm_With_Stack">c++ code by Lode Vandevenne</a>.
-      </p>
-    </td>
-  </tr>
-  <tr>
-    <td><canvas class="step-canvas" id="canvas-rperlin"></canvas></td>
-    <td>
-      <h6>Step 4</h6>
-      <p>
-        Now we just have to get rid of the yellow part to see the first approximation of our terrain appears. 
-        Yellow(Perlin noise) is replaced by red(terrain) inside the blue zone and black(not terrain) outside.
-      </p>
-      <p>
-        So far, the algorithms we applied worked by looping through the pixels of an image. There are a lot of pixels, but because these algorithms are
-        relatively simple it all happens very fast.
-      </p>
-      <p>
-        For the next steps, we'll need to apply some <b>filters</b> to our terrain like the ones in an image editor software. 
-        This is done via an operation called a <a href="https://docs.gimp.org/en/plug-in-convmatrix.html">convolution</a>, where the value of one pixel
-        depends on the values of all its neighboors. We can do this in JavaScript with nested for-loops but it would be very slow.
-        Instead we'll use a WebGL shader, which is a fancy way to make the GPU run all these for-loops efficiently.
-      </p>
-      <p>
-        For shaders I started from <a href="https://github.com/phoboslab/WebGLImageFilter">this library by Dominic Szablewski</a>, and I adapted it a bit to work 
-        with larger kernels(more neighbouring pixels) and with additional filters.
-      </p>
-    </td>
-  </tr>
-  
-  <tr>
-    <td><canvas class="step-canvas" id="canvas-dilation"></canvas></td>
-    <td>
-      <h6>Step 5</h6>
-      <p>
-        Next we apply a <b>dilation</b> filter, it makes our terrain grow.
-      </p>
-      <p>
-      Our goal is to remove all the tunnels and the hollows that are too small:
-      the size of the dilation should be the size of the regions we want to fill. Here we don't want any hollow to be less than 20 pixels (so that 
-      our worms can enter them), we do 5 dilations with a 5x5 kernel that looks like this(the white corners will smooth our contours a bit):<br>
-      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHsAAAB5CAAAAAA8ZAGoAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4gMLDyUuOIB37QAAAOlJREFUaN7t2iEPwjAQhuHrQkX5mRjMBAIEjmS4WbD8R8xqGoohmdjnIGtJ31PL9ZJnXU5cLnPZikVnDduFvrvLZmZudTeb2WZ+XL7XfVLZ46iK/UGmh6e+cvO9ho2NjY2NjY39B3YFc+pNnfePSaZlsd/L9PWSRHa7s9mO8uVilOOtLE46/YqJXsPGxsbGxsbG/iI+81qQh0EveWWx1+kuyFmxlhlZ7mFPP9jljmd179DT59jY2NjY2NjY9dvsckWwy8XGxsbGxsbGLm43vsvlv1xsbGxsbGxsbOzl0FZ6Ts254L3ptTXjDZKiSOhDvDWnAAAAAElFTkSuQmCC" alt="" />
-      </p>
-      <p>
-      You don't want to dilate too much either, otherwise all our hollows and bumps would disapear.
-      </p>
-    </td>
-  </tr>
-  <tr>
-    <td><canvas class="step-canvas" id="canvas-paintbg"></canvas></td>
-    <td>
-      <h6>Step 6</h6>
-      <p>
-        In this step we want to get rid of the remaining holes in our terrain.
-      </p>
-      <p>
-        We do this by first applying flood fill on our background area. To seed the flood fill we use all pixels that are not terrain at the 
-        left, top, and right edges of the image. We don't include the bottom edge because we want background regions at the bottom to be filled by terrain.
-      </p>
-      <p>
-        Any black remaining after this gets turned to terrain, and we can move the yellow background
-        <a href="https://www.youtube.com/watch?v=TJAfLE39ZZ8">back to black</a>.
-      </p>
-    </td>
-  </tr>
-  <tr>
-    <td><canvas class="step-canvas" id="canvas-erosion"></canvas></td>
-    <td>
-      <h6>Step 7</h6>
-      <p>
-        Finally we apply an <b>erosion</b> filter, to shrink our terrain back to the pre-dilation size.
-      </p>
-      <p>
-        In image processing, the dilation plus erosion filtering we just used is sometimes called a <a href="https://en.wikipedia.org/wiki/Closing_(morphology)">closing</a>. 
-        Basically it removes inner background regions and smooth the contours a bit, without changing the size of the terrain.
-      </p>
-      <p>
-        That's it for the first part! This is the final mask representing our terrain. Of course you can play with the controls above to generate others.
-      </p>
-    </td>
-  </tr>
-  </table>
-  
-  <h3>Resolution</h3>
-  <p>
-    Before I talk about the (basic) rendering of our terrain, one word about resolution.
-    The final terrain image at the top of this page is 1564x1024 pixels, which is close to my computer resolution. 
-    All the operations here can work at any resolution but obviously larger images require more time.
-    To speed things up, one trick I used is to have a smaller resolution for the terrain mask and then scale it before rendering.
-    In fact all the computations up to here were done on 782x512 images, four times smaller than the final image.
-    In part two we will have to work at the full 1564x1024 resolution, which is why it is the part that takes the most time.
     
-  </p>
-  
-  <h3>Part II: Terrain rendering</h3>
-  <table class="steps-tb">
-    <tr>
-      <td><canvas class="step-canvas" id="canvas-render"></canvas></td>
-      <td>
-        <h6>Step 8</h6>
-        <p>
-          This looks like our terrain mask from step 7 but actually one things changed: the resolution.
-          On this page the screenshots are reduced to keep the explanations readable, but we are now working with 1564x1024 images.
-        </p>
-      </td>
-    </tr>
-    <tr>
-      <td><canvas class="step-canvas" id="canvas-antialias"></canvas></td>
-      <td>
-        <h6>Step 8</h6>
-        <p>
-          <form name="avatarsform" id="avatarsform">  
-            Less <input id="nbavatars" name="nbavatars" type="range" min="1" max="50" value="10"> More
-          </form>
-        </p>
-      </td>
-    </tr>
-    <!--<tr>
-      <td><canvas class="step-canvas" id="canvas-background"></canvas></td>
-      <td>
-        <h6>Step 8</h6>
-        <p>
-          First you start with the terrain type. <br>
-          This is a low-resolution image that you can create with any image editor. Notice that there are three zones:
-          <ul>
-          <li>The <i>blue</i> part is the heart of the terrain, meaning it should always show up as terrain in the final mask.</li>
-          <li>The <i>black</i> part is the terrain contour, this is where we want our algorithm to generate random hollows and bumps.</li>
-          <li>The <i>red</i> part is the zone that should be outside the terrain in the final mask.</li>
-          </ul>
-        </p>
-        <p>
-          Initially I had only 2 zones(inside/outside) but it turned out to be difficult to generate hollows and bumps that would not encroach far into the outside zone.
-          The additional <i>black</i> zone is used to contain the encroachment.
-        </p>
-      </td>
-    </tr>-->
-  </table>
-  
-<textarea id="timing">
-</textarea>
-  
-  
-  https://www.cg.tuwien.ac.at/research/publications/2015/KREUZER-2015-DPA/
-  
+  <div class="textbloc limitedwidth">
+    <p>
+      Pretty neat, huh? Graphics come from my colleague <a href="https://github.com/pOxaes">pOxaes</a> plus some Android blob smileys.<br>
+      The whole process is not very hard, but I had to find a couple of tricks to make everything works. I'll detail all the steps below:
+    </p>
+  </div>
+
+  <div class="textbloc">
+    <h3>Part I: Terrain generation</h3>
+    
+    <canvas class="pull-right step-canvas" id="canvas-terrain"></canvas>
+    <p class="lead">Step 1</p>
+    <p>
+      First you start with the terrain type. <br>
+      This is a low-resolution image that you can create with any image editor. Notice that there are three zones:
+      <ul>
+      <li>The <i>blue</i> part is the heart of the terrain, meaning it should always show up as terrain in the final mask.</li>
+      <li>The <i>black</i> part is the terrain contour, this is where we want our algorithm to generate random hollows and bumps.</li>
+      <li>The <i>red</i> part is the zone that should be outside the terrain in the final mask.</li>
+      </ul>
+    </p>
+    <p>
+      Initially I had only 2 zones(inside/outside) but it turned out to be difficult to generate hollows and bumps that would not encroach far into the outside zone.
+      The additional <i>black</i> zone is used to contain the encroachment.
+    </p>
+    <div class="clear"></div>
+    
+    <canvas class="pull-right step-canvas" id="canvas-perlin"></canvas>
+    <p class="lead">Step 2</p>
+    <p>
+      Next as suggested in <a href="https://gamedev.stackexchange.com/a/20606">bummzack answer</a> you add some <a href="https://en.wikipedia.org/wiki/Perlin_noise">Perlin noise</a>.<br>
+    </p>
+    <p>
+      This generates continuous "wrinkles" of different size all over the image. 
+      I used this <a href="https://github.com/josephg/noisejs">JavaScript library by josephg</a> to generate two layers of noise:
+      <ul>
+      <li>The first and main layer covers the whole image and will be the basis for the hollows and bumps of our terrain.
+      You can change the noise resolution with the slider above, I encourage you to try a smaller resolution to see the difference.</li>
+      <li>The second layer is set at a very small resolution and covers only the <i>red</i> zone, it will prevent the hollows and bumps to encroach too much in this zone.</li>
+      </ul>
+    </p>
+    <div class="clear"></div>
+    
+    <canvas class="pull-right step-canvas" id="canvas-fperlin"></canvas>
+    <p class="lead">Step 3</p>
+    <p>
+      In this step we <i>paint</i> the terrain on top of the noise.
+    </p>
+    <p>
+      We do this by applying the flood fill algorithm(the <i>bucket tool</i> in a paint program) 
+      from all the points in our <i>blue</i> zone. For a fast way to do this, I translated to JavaScript this 
+      <a href="http://lodev.org/cgtutor/floodfill.html#Scanline_Floodfill_Algorithm_With_Stack">c++ code by Lode Vandevenne</a>.
+    </p>
+    <div class="clear"></div>
+        
+    <canvas class="pull-right step-canvas" id="canvas-rperlin"></canvas>
+    <p class="lead">Step 4</p>
+    <p>
+      Now we just have to get rid of the yellow part to see the first approximation of our terrain appears. 
+      Yellow(Perlin noise) is replaced by red(terrain) inside the blue zone and black(not terrain) outside.
+    </p>
+    <p>
+      So far, the algorithms we applied worked by looping through the pixels of an image. There are a lot of pixels, but because these algorithms are
+      relatively simple it all happens very fast.
+    </p>
+    <p>
+      For the next steps, we'll need to apply some <b>filters</b> to our terrain like the ones in an image editor software. 
+      This is done via an operation called a <a href="https://docs.gimp.org/en/plug-in-convmatrix.html">convolution</a>, where the value of one pixel
+      depends on the values of all its neighboors. We can do this in JavaScript with nested for-loops but it would be very slow.
+      Instead we'll use a WebGL shader, which is a fancy way to make the GPU run all these for-loops efficiently.
+    </p>
+    <p>
+      For shaders I started from <a href="https://github.com/phoboslab/WebGLImageFilter">this library by Dominic Szablewski</a>, and I adapted it a bit to work 
+      with larger kernels(more neighbouring pixels) and with additional filters.
+    </p>
+    <div class="clear"></div>
+
+    <canvas class="pull-right step-canvas" id="canvas-dilation"></canvas>
+    <p class="lead">Step 5</p>
+    <p>
+      Next we apply a <b>dilation</b> filter, it makes our terrain grow.
+    </p>
+    <p>
+    Our goal is to remove all the tunnels and the hollows that are too small:
+    the size of the dilation should be the size of the regions we want to fill. Here we don't want any hollow to be less than 20 pixels (so that 
+    our worms can enter them), we do 5 dilations with a 5x5 kernel that looks like this(the white corners will smooth our contours a bit):<br>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHsAAAB5CAAAAAA8ZAGoAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4gMLDyUuOIB37QAAAOlJREFUaN7t2iEPwjAQhuHrQkX5mRjMBAIEjmS4WbD8R8xqGoohmdjnIGtJ31PL9ZJnXU5cLnPZikVnDduFvrvLZmZudTeb2WZ+XL7XfVLZ46iK/UGmh6e+cvO9ho2NjY2NjY39B3YFc+pNnfePSaZlsd/L9PWSRHa7s9mO8uVilOOtLE46/YqJXsPGxsbGxsbG/iI+81qQh0EveWWx1+kuyFmxlhlZ7mFPP9jljmd179DT59jY2NjY2NjY9dvsckWwy8XGxsbGxsbGLm43vsvlv1xsbGxsbGxsbOzl0FZ6Ts254L3ptTXjDZKiSOhDvDWnAAAAAElFTkSuQmCC" alt="" />
+    </p>
+    <p>
+    You don't want to dilate too much either, otherwise all our hollows and bumps would disapear.
+    </p>
+    <div class="clear"></div>
+
+    <canvas class="pull-right step-canvas" id="canvas-paintbg"></canvas>
+    <p class="lead">Step 6</p>
+    <p>
+      In this step we want to get rid of the remaining holes in our terrain.
+    </p>
+    <p>
+      We do this by first applying flood fill on our background area. To seed the flood fill we use all pixels that are not terrain at the 
+      left, top, and right edges of the image. We don't include the bottom edge because we want background regions at the bottom to be filled by terrain.
+    </p>
+    <p>
+      Any black remaining after this gets turned to terrain, and we can move the yellow background
+      <a href="https://www.youtube.com/watch?v=TJAfLE39ZZ8">back to black</a>.
+    </p>
+    <div class="clear"></div>
+    
+    <canvas class="pull-right step-canvas" id="canvas-erosion"></canvas>
+    <p class="lead">Step 7</p>
+    <p>
+      Finally we apply an <b>erosion</b> filter, to shrink our terrain back to the pre-dilation size.
+    </p>
+    <p>
+      In image processing, the dilation plus erosion filtering we just used is sometimes called a <a href="https://en.wikipedia.org/wiki/Closing_(morphology)">closing</a>. 
+      Basically it removes inner background regions and smooth the contours a bit, without changing the size of the terrain.
+    </p>
+    <p>
+      That's it for the first part! This is the final mask representing our terrain. Of course you can play with the controls above to generate others.
+    </p>
+    <div class="clear"></div>
+    
+    <canvas class="pull-right step-canvas" id="canvas-antialias"></canvas>
+    <p class="lead">Step 8</p>
+    <p>
+      antialias.
+    </p>
+    <div class="clear"></div>
+    
+    <h3>Resolution</h3>
+    <p>
+      Before I talk about the (basic) rendering of our terrain, one word about resolution.
+      The final terrain image at the top of this page is 1564x1024 pixels, which is close to my computer resolution. 
+      All the operations here can work at any resolution but obviously larger images require more time.
+      To speed things up, one trick I used is to have a smaller resolution for the terrain mask and then scale it before rendering.
+      In fact all the computations up to here were done on 782x512 images, four times smaller than the final image.
+      In part two we will have to work at the full 1564x1024 resolution, which is why it is the part that takes the most time.
+      
+    </p>
+    
+    <h3>Part II: Terrain rendering</h3>
+    
+    <canvas class="pull-right step-canvas" id="canvas-render"></canvas>
+    <p class="lead">Step 8</p>
+    <p>
+      This looks like our terrain mask from step 7 but actually one things changed: the resolution.
+      On this page the screenshots are reduced to keep the explanations readable, but we are now working with 1564x1024 images.
+    </p>
+    <p>
+      <form name="avatarsform" id="avatarsform">  
+        Less avatars <input id="nbavatars" name="nbavatars" type="range" min="1" max="50" value="10"> More avatars
+      </form>
+    </p>
+    <div class="clear"></div>
+    
+    <textarea id="timing">
+    </textarea>
+    
+    https://www.cg.tuwien.ac.at/research/publications/2015/KREUZER-2015-DPA/
+  </div>
 
 
 <script src="libs/hqx.js"></script>

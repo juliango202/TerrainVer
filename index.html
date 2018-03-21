@@ -4,23 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width">
   <meta name="robots" content="all">
-  <meta http-equiv="imagetoolbar" content="false">
-  <link rel="Shortcut Icon" href="/favicon.ico" type="image/x-icon">
   <title>TerrainVer - Worms-style cartoon terrain in JavaScript</title>
   <style>
     body {
-      text-align:center; 
-      color:#000; 
-      font-family:georgia, serif; 
-      font-size:120%; 
+      text-align:center;
+      color:#000;
+      font-family:georgia, serif;
+      font-size:120%;
       line-height:1.6;
-      margin:0; 
-      padding:2em 0 5em; 
+      margin:0;
+      padding:2em 0 5em;
       background:rgb(253, 253, 253);
       margin:auto;
-      
+
       color:rgb(10, 10, 10);
-    } 
+    }
 
     a {outline:none !important; font-weight:bold; text-decoration:none;}
     a:link {color:#c00;}
@@ -102,22 +100,22 @@
     .quiet {color:#999;}
     .pull-left {float:left; margin:0.5em 2em 1em 0;}
     .pull-right {float:right; margin:0.5em 0 1em 2em;}
-    
+
     @media (max-width:1024px) {
       body {font-size:100%;}
     }
-    
+
     @media (max-width:640px) {
       body {font-size:80%;}
       img, canvas {
-        max-width:100% !important; 
-        height:auto !important; 
+        max-width:100% !important;
+        height:auto !important;
         float:none !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
       }
     }
-    
+
     input[type=range] {
       vertical-align: middle;
     }
@@ -125,33 +123,33 @@
     .terrtype {
       width: 100px;
     }
-    
+
     #genform {
       background: #fff;
       border-bottom: 1px solid #888;
       margin: 0 10px 9px 10px;
       z-index: 20;
     }
-    
+
     .sticky {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
     }
-    
+
     #genform + p {
       margin-top: 0;
     }
-    
+
     #genform.sticky + p {
       margin-top: 90px;
     }
-    
+
     #charasform {
       text-align: left;
     }
-    
+
     #gen-tb {
       border-spacing: 8px;
       margin: 0 auto;
@@ -170,7 +168,7 @@
 /*    #gen:disabled {
       color: #f00;
     }*/
-    
+
     #result {
       /* We want result to be 100% width with a 0.625 aspect ratio */
       /* content inside must be absolutely positioned */
@@ -181,7 +179,7 @@
       box-sizing: border-box;
       overflow: hidden;
     }
-    
+
     .steps-tb {
       text-align: left;
       margin: 0 auto;
@@ -191,7 +189,7 @@
       vertical-align: top;
       padding: 8px;
     }
-    
+
     .timer {
       font-weight: normal;
       color: #999;
@@ -200,7 +198,7 @@
       text-transform: lowercase;
       letter-spacing: 0;
     }
-    
+
     canvas {
       max-width: 100%;
     }
@@ -208,7 +206,7 @@
       max-width: 50%;
       image-rendering: pixelated;
     }
-    
+
     .textbloc {
       margin: 0 auto;
       max-width: 90%;
@@ -216,18 +214,18 @@
     .textbloc.limitedwidth {
       max-width: 45em;
     }
-    
+
     div.clear {
       clear:both;
       margin-bottom: 2em;
     }
-    
+
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
       grid-gap: 5px;
     }
-    
+
     .article-img {
       object-fit: cover;
     }
@@ -243,7 +241,7 @@
     }
 
   </style>
-  
+
 </head>
 
 <body>
@@ -255,14 +253,14 @@
     It's now <a href="https://github.com/juliango202">open source</a> and this page will serve as both a detailed explanation of the algorithm and a demo:
     </p>
   </div>
-  
+
   <div id="result">
     <canvas id="bgcanvas" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 10;"></canvas>
     <canvas id="bgwater" style="position: absolute; left: 0; bottom: 0; right: 0; z-index: 11;opacity: 0.24;"></canvas>
     <canvas id="fgcanvas" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 12;"></canvas>
     <canvas id="fgwater" style="position: absolute; left: 0; bottom: 0; right: 0; z-index: 13;opacity: 0.45;"></canvas>
   </div>
-  
+
 
   <form name="genform" id="genform">
     <table id="gen-tb">
@@ -277,13 +275,13 @@
         </td>
         <td>
           <input type="radio" name="selshape" id="type1" value="type-1" />
-          <label for="type1"><img class="terrtype" src="/img/type-1.png"></label>
+          <label for="type1"><img class="terrtype" src="./img/type-1.png"></label>
 
           <input type="radio" name="selshape" id="type2" value="type-2" />
-          <label for="type2"><img class="terrtype" src="/img/type-2.png"></label>
+          <label for="type2"><img class="terrtype" src="./img/type-2.png"></label>
 
           <input type="radio" name="selshape" id="type3" value="type-3" checked />
-          <label for="type3"><img class="terrtype" src="/img/type-3.png"></label>
+          <label for="type3"><img class="terrtype" src="./img/type-3.png"></label>
         </td>
       </tr>
     </table>
@@ -299,24 +297,24 @@
   <p style="text-align: center">
     <i>You can use the controls above to generate another terrain at random, or change the terrain type.</i>
   </p>
-    
+
   <div class="textbloc limitedwidth">
     <p>
       Pretty neat, huh? Graphics come from my colleague <a href="https://github.com/pOxaes">pOxaes</a> plus Android blob smileys.<br>
-      I'll explain the two main parts to arrive at this image: how to generate a random terrain mask, 
-      and how to apply a (simple) rendering algorithm. 
+      I'll explain the two main parts to arrive at this image: how to generate a random terrain mask,
+      and how to apply a (simple) rendering algorithm.
       Like most projects the general ideas are easy to understand but getting the details right is tricky!
-    </p>    
+    </p>
   </div>
-  
+
   <div class="textbloc limitedwidth">
     <h3>Part I: Terrain generation<i id="timer-generate-terrain" class="timer"></i></h3>
     <p>
-      First let me acknowledge that my approach for terrain generation is based on 
-      <a href="https://gamedev.stackexchange.com/a/20606">this great answer by bummzack</a>. 
-      Basically it suggests to start by thresholding some 2D Perlin noise and go from there. 
-      I suspect there is a better <i>vectorial</i> way to do this, but this solution seemed relatively simple 
-      and so a good fit for a hobby project, and indeed I could get something working in a couple of days. 
+      First let me acknowledge that my approach for terrain generation is based on
+      <a href="https://gamedev.stackexchange.com/a/20606">this great answer by bummzack</a>.
+      Basically it suggests to start by thresholding some 2D Perlin noise and go from there.
+      I suspect there is a better <i>vectorial</i> way to do this, but this solution seemed relatively simple
+      and so a good fit for a hobby project, and indeed I could get something working in a couple of days.
       I have since refined and optimized the process, here is a complete explanation in 8 steps:
     </p>
   </div>
@@ -338,14 +336,14 @@
       The additional <i>blue</i> zone is used to contain the encroachment.
     </p>
     <div class="clear"></div>
-    
+
     <canvas class="pull-right step-canvas" id="canvas-perlin"></canvas>
     <p class="lead">Step 2<i id="timer-perlin-noise" class="timer"></i></p>
     <p>
       Next as suggested in <a href="https://gamedev.stackexchange.com/a/20606">bummzack answer</a> you add some <a href="https://en.wikipedia.org/wiki/Perlin_noise">Perlin noise</a>.<br>
     </p>
     <p>
-      This generates continuous "wrinkles" of different size all over the image. 
+      This generates continuous "wrinkles" of different size all over the image.
       I used this <a href="https://github.com/josephg/noisejs">JavaScript library by josephg</a> to generate two layers of noise:
       <ul>
       <li>The first and main layer covers the whole image and will be the basis for the hollows and bumps of our terrain.
@@ -354,23 +352,23 @@
       </ul>
     </p>
     <div class="clear"></div>
-    
+
     <canvas class="pull-right step-canvas" id="canvas-fperlin"></canvas>
     <p class="lead">Step 3<i id="timer-floodfill-perlin" class="timer"></i></p>
     <p>
       In this step we <i>paint</i> the terrain on top of the noise.
     </p>
     <p>
-      We do this by applying the flood fill algorithm(the <i>bucket tool</i> in a paint program) 
-      from all the points at the border of the <i>red</i> zone. For a fast way to do this, I translated to JavaScript this 
+      We do this by applying the flood fill algorithm(the <i>bucket tool</i> in a paint program)
+      from all the points at the border of the <i>red</i> zone. For a fast way to do this, I translated to JavaScript this
       <a href="http://lodev.org/cgtutor/floodfill.html#Scanline_Floodfill_Algorithm_With_Stack">c++ code by Lode Vandevenne</a>.
     </p>
     <div class="clear"></div>
-        
+
     <canvas class="pull-right step-canvas" id="canvas-rperlin"></canvas>
     <p class="lead">Step 4<i id="timer-remove-perlin" class="timer"></i></p>
     <p>
-      Now we just have to get rid of the yellow part to see the first approximation of our terrain appears. 
+      Now we just have to get rid of the yellow part to see the first approximation of our terrain appears.
       Yellow(Perlin noise) is replaced by black(not terrain).
     </p>
     <p>
@@ -378,13 +376,13 @@
       relatively simple it all happens very fast.
     </p>
     <p>
-      For the next steps, we'll need to apply some <b>filters</b> to our terrain like the ones in an image editor software. 
+      For the next steps, we'll need to apply some <b>filters</b> to our terrain like the ones in an image editor software.
       This is done via an operation called a <a href="https://en.wikipedia.org/wiki/Kernel_(image_processing)">convolution</a>, where the value of one pixel
       depends on the values of all its neighbours. We can do this in JavaScript with nested for-loops but it would be very slow.
       Instead we'll use a WebGL shader, which is a fancy way to make the GPU run all these for-loops efficiently.
     </p>
     <p>
-      For shaders I started from <a href="https://github.com/phoboslab/WebGLImageFilter">this library by Dominic Szablewski</a>, that I adapted a bit to work 
+      For shaders I started from <a href="https://github.com/phoboslab/WebGLImageFilter">this library by Dominic Szablewski</a>, that I adapted a bit to work
       with larger kernels(more neighbouring pixels) and different filters.
     </p>
     <div class="clear"></div>
@@ -396,7 +394,7 @@
     </p>
     <p>
     Our goal is to remove all the tunnels and the hollows that are too small:
-    the size of the dilation should be the size of the regions we want to fill. Here we don't want any hollow to be less than 20 pixels (so that 
+    the size of the dilation should be the size of the regions we want to fill. Here we don't want any hollow to be less than 20 pixels (so that
     our worms can enter them), we do 5 dilations with a 5x5 kernel that looks like this(the white corners will smooth our contours a bit):<br>
     <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHsAAAB5CAAAAAA8ZAGoAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4gMLDyUuOIB37QAAAOlJREFUaN7t2iEPwjAQhuHrQkX5mRjMBAIEjmS4WbD8R8xqGoohmdjnIGtJ31PL9ZJnXU5cLnPZikVnDduFvrvLZmZudTeb2WZ+XL7XfVLZ46iK/UGmh6e+cvO9ho2NjY2NjY39B3YFc+pNnfePSaZlsd/L9PWSRHa7s9mO8uVilOOtLE46/YqJXsPGxsbGxsbG/iI+81qQh0EveWWx1+kuyFmxlhlZ7mFPP9jljmd179DT59jY2NjY2NjY9dvsckWwy8XGxsbGxsbGLm43vsvlv1xsbGxsbGxsbOzl0FZ6Ts254L3ptTXjDZKiSOhDvDWnAAAAAElFTkSuQmCC" alt="" />
     </p>
@@ -411,7 +409,7 @@
       In this step we want to get rid of the remaining holes in our terrain.
     </p>
     <p>
-      We do this by first applying flood fill on our background area. To seed the flood fill we use all pixels that are not terrain at the 
+      We do this by first applying flood fill on our background area. To seed the flood fill we use all pixels that are not terrain at the
       left, top, right, and bottom edges of the image.
     </p>
     <p>
@@ -419,18 +417,18 @@
       <a href="https://www.youtube.com/watch?v=TJAfLE39ZZ8">back to black</a>.
     </p>
     <div class="clear"></div>
-    
+
     <canvas class="pull-right step-canvas" id="canvas-erosion"></canvas>
     <p class="lead">Step 7<i id="timer-erosion" class="timer"></i></p>
     <p>
       Now we can apply an <b>erosion</b> filter, to shrink our terrain back to the pre-dilation size.
     </p>
     <p>
-      In image processing, the dilation plus erosion filtering we used is sometimes called a <a href="https://en.wikipedia.org/wiki/Closing_(morphology)">closing</a>. 
+      In image processing, the dilation plus erosion filtering we used is sometimes called a <a href="https://en.wikipedia.org/wiki/Closing_(morphology)">closing</a>.
       Basically it removes inner background regions and smooth the contours a bit, without changing the size of the terrain.
     </p>
     <div class="clear"></div>
-    
+
     <canvas class="pull-right step-canvas" id="canvas-depixelate"></canvas>
     <p class="lead">Step 8<i id="timer-depixelate" class="timer"></i></p>
     <p>
@@ -438,48 +436,48 @@
       but this last step is actually crucial and probably the most difficult to get right, it is about <b>anti-aliasing</b>.
     </p>
     <p>
-      Up to here all the operations were in essence binary, a pixel is either terrain or not terrain. 
+      Up to here all the operations were in essence binary, a pixel is either terrain or not terrain.
       Additionally, to speed things up we worked on images 4 times smaller than the final result we want.
       This means that when scaled at the final size, our terrain has unpleasant <a href="https://en.wikipedia.org/wiki/Jaggies">jaggies</a> at the contour.
     </p>
     <p>
       To improve things I first tried to apply successive mean filters, or average filters, followed by a threshold pass. When repeated multiple times for
       both the red and the black regions, this greatly improves the contour but there is still some aliasing(<i>Avg</i> below).
-      Looking for a solution online, I learned that there are a <a href="https://en.wikipedia.org/wiki/Pixel-art_scaling_algorithms">number of algorithms</a> 
-      for my anti-aliasing/depixelating task, even some 
-      <a href="https://www.cg.tuwien.ac.at/research/publications/2015/KREUZER-2015-DPA/">recent research</a>. 
-      I could implement <a href="http://www.scale2x.it/algorithm">Scale3x</a> as a filter, and found JavaScript libraries for the  
-      <a href="https://github.com/carlosascari/2xBR-Filter">xBR</a> and <a href="https://github.com/phoboslab/js-hqx">hqx</a> algorithms. 
+      Looking for a solution online, I learned that there are a <a href="https://en.wikipedia.org/wiki/Pixel-art_scaling_algorithms">number of algorithms</a>
+      for my anti-aliasing/depixelating task, even some
+      <a href="https://www.cg.tuwien.ac.at/research/publications/2015/KREUZER-2015-DPA/">recent research</a>.
+      I could implement <a href="http://www.scale2x.it/algorithm">Scale3x</a> as a filter, and found JavaScript libraries for the
+      <a href="https://github.com/carlosascari/2xBR-Filter">xBR</a> and <a href="https://github.com/phoboslab/js-hqx">hqx</a> algorithms.
       Here is a comparison of the results:
     </p>
-    
+
     <section class="cards">
       <div style="position: relative">
-        <img class="article-img" src="/img/demo/m_nearest.png" />
+        <img class="article-img" src="./img/demo/m_nearest.png" />
         <h1 class="article-title">
           Original
         </h1>
       </div>
       <div style="position: relative">
-        <img class="article-img" src="/img/demo/m_avg.png" />
+        <img class="article-img" src="./img/demo/m_avg.png" />
         <h1 class="article-title">
           Avg
         </h1>
       </div>
       <div style="position: relative">
-        <img class="article-img" src="/img/demo/m_scale3x.png" />
+        <img class="article-img" src="./img/demo/m_scale3x.png" />
         <h1 class="article-title">
           Scale3x
         </h1>
       </div>
       <div style="position: relative">
-        <img class="article-img" src="/img/demo/m_xbr.png" />
+        <img class="article-img" src="./img/demo/m_xbr.png" />
         <h1 class="article-title">
           Xbr
         </h1>
       </div>
       <div style="position: relative">
-        <img class="article-img" src="/img/demo/m_hqx.png" />
+        <img class="article-img" src="./img/demo/m_hqx.png" />
         <h1 class="article-title">
           Hqx
         </h1>
@@ -487,46 +485,46 @@
     </section>
         <section class="cards">
       <div style="position: relative">
-        <img class="article-img" src="/img/demo/r_nearest.png" />
+        <img class="article-img" src="./img/demo/r_nearest.png" />
         <h1 class="article-title">
           Original
         </h1>
       </div>
       <div style="position: relative">
-        <img class="article-img" src="/img/demo/r_avg.png" />
+        <img class="article-img" src="./img/demo/r_avg.png" />
         <h1 class="article-title">
           Avg
         </h1>
       </div>
       <div style="position: relative">
-        <img class="article-img" src="/img/demo/r_scale3x.png" />
+        <img class="article-img" src="./img/demo/r_scale3x.png" />
         <h1 class="article-title">
           Scale3X
         </h1>
       </div>
       <div style="position: relative">
-        <img class="article-img" src="/img/demo/r_xbr.png" />
+        <img class="article-img" src="./img/demo/r_xbr.png" />
         <h1 class="article-title">
           Xbr
         </h1>
       </div>
       <div style="position: relative">
-        <img class="article-img" src="/img/demo/r_hqx.png" />
+        <img class="article-img" src="./img/demo/r_hqx.png" />
         <h1 class="article-title">
           Hqx
         </h1>
       </div>
     </section>
     <p>
-      As you can see the differences are quite subtle but there is a clear winner: the <a href="https://en.wikipedia.org/wiki/Hqx">hqx algorithm</a> 
-      gives the clearest image, with sharp contours and no visual artifact. This is what I ended up using for this step, the output of hqx is the final 
+      As you can see the differences are quite subtle but there is a clear winner: the <a href="https://en.wikipedia.org/wiki/Hqx">hqx algorithm</a>
+      gives the clearest image, with sharp contours and no visual artifact. This is what I ended up using for this step, the output of hqx is the final
       mask representing our terrain.<br>
-      I didn't realize it at first but the two libraries I choose completely independently for doing WebGL filters and depixelating(hqx) are from 
+      I didn't realize it at first but the two libraries I choose completely independently for doing WebGL filters and depixelating(hqx) are from
       the same <a href="https://github.com/phoboslab">author</a>. Hats off!
     </p>
     <div class="clear"></div>
   </div>
-    
+
   <div class="textbloc limitedwidth">
     <h3>Part II: Terrain rendering<i id="timer-render-terrain" class="timer"></i></h3>
     <p>
@@ -534,9 +532,9 @@
       to integrate with a game engine library with tools for background layers, texturing, animations, and more.
       But because this is just a demo, we'll skip the library and do a simple rendering pass.
     </p>
-  </div>  
-    
-  <div class="textbloc">  
+  </div>
+
+  <div class="textbloc">
     <canvas class="pull-right step-canvas" id="canvas-render"></canvas>
     <p class="lead">Step 9<i id="timer-texturize" class="timer"></i></p>
     <p>
@@ -544,13 +542,13 @@
       If the current pixel is off in the terrain mask, we just set alpha to zero.
       If it's terrain, we first set alpha to be the terrain mask value to preserve hqx anti-aliasing.
       Then we count the pixels on top before we reach the edge of the terrain:
-      if there are less than let's say 8 pixels we'll assign some border color value, otherwise the pixel will be ground. 
+      if there are less than let's say 8 pixels we'll assign some border color value, otherwise the pixel will be ground.
     </p>
     <p>
      Ground pixels are textured from an image, and we apply a random translation to the texture to add some variation.
     </p>
     <div class="clear"></div>
-    
+
     <canvas class="pull-right step-canvas" id="canvas-surface"></canvas>
     <p class="lead">Step 10<i id="timer-position-generator" class="timer"></i></p>
     <p>
@@ -558,12 +556,12 @@
       Easily enough the surface pixels are the pixels at the top edge of our border.
     </p>
     <p>
-      To avoid collisions and spots that are too narrow, we apply a small erosion 
-      filter that will remove some pixels at the ends of each surface segment. 
+      To avoid collisions and spots that are too narrow, we apply a small erosion
+      filter that will remove some pixels at the ends of each surface segment.
       We also drop surface pixels that are too low, because this is where we want to add water.
     </p>
     <div class="clear"></div>
-    
+
     <canvas class="pull-right step-canvas" id="canvas-chara"></canvas>
     <p class="lead">Step 11<i id="timer-characters" class="timer"></i></p>
     <p>
@@ -582,38 +580,38 @@
       You can see the effect of the Halton sequence by changing the numbers of characters with the slider below:
     </p>
     <p>
-      <form name="charasform" id="charasform">  
+      <form name="charasform" id="charasform">
         Less characters <input id="nbcharas" name="nbcharas" type="range" min="0" max="40" value="10"> More characters
       </form>
     </p>
     <div class="clear"></div>
-    
-    <img class="pull-right step-canvas" src="/img/demo/water.gif">
+
+    <img class="pull-right step-canvas" src="./img/demo/water.gif">
     <p class="lead">Step 12<i id="timer-wave" class="timer"></i></p>
     <p>
-      Finally for a touch of animation we'll add some water. 
-      For that we can simply draw a semi-transparent sinus wave at regular interval. 
-      To give a sense of depth we'll put one behind the terrain and one in front. 
+      Finally for a touch of animation we'll add some water.
+      For that we can simply draw a semi-transparent sinus wave at regular interval.
+      To give a sense of depth we'll put one behind the terrain and one in front.
     </p>
     <p>
       We end up with four layers to display: the background image, the background water, the rendered terrain, and the foreground water.
-      There is no support for compositing layers in the canvas API, but from what 
+      There is no support for compositing layers in the canvas API, but from what
       <a href="https://www.ibm.com/developerworks/library/wa-canvashtml5layering/">I've read</a> a common solution is to have one canvas per layer
       and stack them on top of each other. This is what I've done for the final result at the top of this page.
     </p>
     <div class="clear"></div>
-    
+
     <div class="textbloc limitedwidth">
       <h3>Conclusion</h3>
       <p>
-        Thanks to all the API available in modern browsers we've been able to do some fast image processing and generate a pretty decent 
-        terrain all client-side. I haven't covered all the details but the code is now open source, hopefully with enough comments, 
+        Thanks to all the API available in modern browsers we've been able to do some fast image processing and generate a pretty decent
+        terrain all client-side. I haven't covered all the details but the code is now open source, hopefully with enough comments,
         so I invite you to <a href="">check it out</a> if you want to know more.
         And maybe reuse it for your own game?
-        <img style="vertical-align: middle" src="/img/demo/smile.png">
+        <img style="vertical-align: middle" src="./img/demo/smile.png">
       </p>
-    </div>      
-    
+    </div>
+
   </div>
 
 

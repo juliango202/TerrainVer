@@ -1,12 +1,12 @@
 /*
- * 
+ *
  * This is an adapted version from https://github.com/josephg/noisejs
  * I just updated the syntax & formatting.
- * 
+ *
  * -------------------------------------------------------------
- * 
+ *
  * A speed-improved perlin and simplex noise algorithms for 2D.
- * 
+ *
  * Based on example code by Stefan Gustavson (stegu@itn.liu.se).
  * Optimisations by Peter Eastman (peastman@drizzle.stanford.edu).
  * Better rank ordering method by Stefan Gustavson in 2012.

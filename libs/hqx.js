@@ -1,10 +1,10 @@
 /*
- * 
+ *
  * This is a copy of https://github.com/phoboslab/js-hqx
  * I only kept hq2x, see original github repo for hq3x and hq4x.
- * 
+ *
  * -------------------------------------------------------------
- * 
+ *
  * Copyright (C) 2003 Maxim Stepin ( maxst@hiend3d.com )
  *
  * Copyright (C) 2010 Cameron Zemek ( grom@zeminvaders.net )
@@ -31,17 +31,17 @@
 
 "use strict"; // strict will be optimized on engines (https://developer.mozilla.org/en/JavaScript/Strict_mode)
 
-var 
+var
 	_src = null,
 	_dest = null,
-	
+
 	_MASK_2 = 0x00FF00,
 	_MASK_13 = 0xFF00FF,
-	
+
 	_Ymask = 0x00FF0000,
 	_Umask = 0x0000FF00,
 	_Vmask = 0x000000FF,
-	
+
 	_trY = 0x00300000,
 	_trU = 0x00000700,
 	_trV = 0x00000006;
@@ -53,7 +53,7 @@ var _RGBtoYUV = function( c ) {
 	var g = (c & 0x00FF00) >> 8;
 	var b =  c & 0x0000FF;
 	return  ((/*y=*/(0.299*r + 0.587*g + 0.114*b) | 0) << 16) +
-		((/*u=*/((-0.169*r - 0.331*g + 0.5*b) + 128) | 0) << 8) + 
+		((/*u=*/((-0.169*r - 0.331*g + 0.5*b) + 128) | 0) << 8) +
 		(/*v=*/((0.5*r - 0.419*g - 0.081*b) + 128) | 0);
 };
 
@@ -188,7 +188,7 @@ var getImagePixels = function( image, x, y, width, height ) {
 	canvas.height = Math.ceil( realHeight );
 
 	ctx.drawImage( image, 0, 0, realWidth, realHeight );
-	
+
 	return (ratio === 1)
 		? ctx.getImageData( x, y, width, height )
 		: ctx.getImageDataHD( x, y, width, height );
@@ -211,8 +211,8 @@ window.hqx = function( img, scale ) {
 		origPixels = getImagePixels( img, 0, 0, img.width, img.height ).data;
 		scaled = document.createElement('canvas');
 	}
-	
-	
+
+
 	// pack RGBA colors into integers
 	var count = img.width * img.height;
 	var src = _src = new Array(count);
@@ -230,11 +230,11 @@ window.hqx = function( img, scale ) {
 
 	scaled.width = img.width * scale;
 	scaled.height = img.height * scale;
-	
+
 	var scaledCtx = scaled.getContext('2d');
 	var scaledPixels = scaledCtx.getImageData( 0, 0, scaled.width, scaled.height );
 	var scaledPixelsData = scaledPixels.data;
-	
+
 	// unpack integers to RGBA
 	var c, a, destLength = dest.length;
 	for( var j = 0; j < destLength; j++ ) {
@@ -266,9 +266,9 @@ var hq2x = function( width, height ) {
 
 		dp = 0,
 		sp = 0;
-		
+
 	// internal to local optimization
-	var 
+	var
 		Diff = _Diff,
 		Math = _Math,
 		RGBtoYUV = _RGBtoYUV,
@@ -293,7 +293,7 @@ var hq2x = function( width, height ) {
 		trU = _trU,
 		trV = _trV,
 		YUV1, YUV2;
-		
+
 
     //   +----+----+----+
     //   |    |    |    |

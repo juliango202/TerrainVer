@@ -18,19 +18,19 @@ export default class TerrainGenerator {
   // Factory method to create a TerrainGenerator from an img url instead of an img object
   static async fromImgUrl (opts) {
     const imgOpts = Object.assign({}, opts, { terrainTypeImg: await loadImage(opts.terrainTypeImg) })
-    return new TerrainGenerator (imgOpts)
-   }
-   
+    return new TerrainGenerator(imgOpts)
+  }
+
   constructor (opts) {
     // Check options values
     this.options = Object.assign({}, DEFAULT_OPTIONS, opts)
-    if (this.options.width % 2 != 0 || this.options.height % 2) {
-      throw new Error("Terrain width and height should be even")
+    if (this.options.width % 2 !== 0 || this.options.height % 2) {
+      throw new Error('Terrain width and height should be even')
     }
     if (!this.options.terrainTypeImg) {
-      throw new Error("Required terrainTypeImg option must be an HTMLImageElement(or a CanvasImageSource)")
+      throw new Error('Required terrainTypeImg option must be an HTMLImageElement(or a CanvasImageSource)')
     }
-    
+
     // We will work on images 4 times smaller than the final resolution
     // then magnify it at the last step
     this.w = this.options.width / 2
@@ -39,7 +39,7 @@ export default class TerrainGenerator {
     this.terrainType = getHtmlImageData(this.options.terrainTypeImg, { width: this.w, height: this.h })
     this.terrainTypePoints = this.loadTerrainTypePoints()
   }
-  
+
   // Compute and return the following:
   // fgPoints : An array of points (x,y) at the contour of the core of the terrain
   // bgPoints: An array of points (x,y) at the border representing the background
@@ -109,7 +109,7 @@ export default class TerrainGenerator {
       }
     }
   }
-  
+
   paintBackground () {
     // Floodfill from background points at the border
     this.floodFill(this.terrainTypePoints.bg.slice(), {
@@ -178,11 +178,11 @@ export default class TerrainGenerator {
       }
     }
   }
-  
+
   magnify () {
     const tempCanvas = document.createElement('canvas')
     drawStepToCanvas(this.terr, tempCanvas)
-    return hqx(tempCanvas, 2)
+    return window.hqx(tempCanvas, 2)
   }
 
   // Generate a terrain and return a html Canvas object representing it(red on black image)
@@ -191,55 +191,55 @@ export default class TerrainGenerator {
       throw new Error('Invalid seed: ' + seed + ', must be between [0,1).')
     }
     const debug = this.options.debug
-    if (debug) timer.start("generate-terrain")
+    if (debug) timer.start('generate-terrain')
 
     // Start with a copy of the terrain type image
-    if (debug) timer.start("terrain-type")
+    if (debug) timer.start('terrain-type')
     this.terr.data.set(this.terrainType.data)
-    if (debug) timer.stop("terrain-type")
-    if (debug) drawStepToCanvas(this.terr, "canvas-terrain")      
+    if (debug) timer.stop('terrain-type')
+    if (debug) drawStepToCanvas(this.terr, 'canvas-terrain')
 
     // Extend terrain accross area defined by random Perlin noise
-    if (debug) timer.start("perlin-noise")
+    if (debug) timer.start('perlin-noise')
     this.perlinNoise(seed)
-    if (debug) timer.stop("perlin-noise")
-    if (debug) drawStepToCanvas(this.terr, "canvas-perlin")
-      
-    if (debug) timer.start("floodfill-perlin")
+    if (debug) timer.stop('perlin-noise')
+    if (debug) drawStepToCanvas(this.terr, 'canvas-perlin')
+
+    if (debug) timer.start('floodfill-perlin')
     this.floodFill(this.terrainTypePoints.fg.slice(), {})
-    if (debug) timer.stop("floodfill-perlin")
-    if (debug) drawStepToCanvas(this.terr, "canvas-fperlin")
-    
-    if (debug) timer.start("remove-perlin")
+    if (debug) timer.stop('floodfill-perlin')
+    if (debug) drawStepToCanvas(this.terr, 'canvas-fperlin')
+
+    if (debug) timer.start('remove-perlin')
     this.removePerlin()
-    if (debug) timer.stop("remove-perlin")
-    if (debug) drawStepToCanvas(this.terr, "canvas-rperlin")
+    if (debug) timer.stop('remove-perlin')
+    if (debug) drawStepToCanvas(this.terr, 'canvas-rperlin')
 
     // Cleanup terrain shape through convolutions
-    if (debug) timer.start("dilation")
+    if (debug) timer.start('dilation')
     convolution(['dilation', 'dilation', 'dilation', 'dilation', 'dilation'], this.terr, this.terr)
-    if (debug) timer.stop("dilation")
-    if (debug) drawStepToCanvas(this.terr, "canvas-dilation")
-      
-    if (debug) timer.start("nohole")
+    if (debug) timer.stop('dilation')
+    if (debug) drawStepToCanvas(this.terr, 'canvas-dilation')
+
+    if (debug) timer.start('nohole')
     this.paintBackground()
-    if (debug) drawStepToCanvas(this.terr, "canvas-paintbg")
+    if (debug) drawStepToCanvas(this.terr, 'canvas-paintbg')
     this.removeHoles()
-    if (debug) timer.stop("nohole")
-      
-    if (debug) timer.start("erosion")
+    if (debug) timer.stop('nohole')
+
+    if (debug) timer.start('erosion')
     convolution(['erosion', 'erosion', 'erosion', 'erosion'], this.terr, this.terr)
-    if (debug) timer.stop("erosion")
-    if (debug) drawStepToCanvas(this.terr, "canvas-erosion")
+    if (debug) timer.stop('erosion')
+    if (debug) drawStepToCanvas(this.terr, 'canvas-erosion')
 
     // Magnify result to final size using hq2x algorithm
-    if (debug) timer.start("depixelate")
+    if (debug) timer.start('depixelate')
     const finalCanvas = this.magnify()
-    if (debug) timer.stop("depixelate")
-    if ( debug ) drawStepToCanvas(finalCanvas, "canvas-depixelate", 0.5)
-      
+    if (debug) timer.stop('depixelate')
+    if (debug) drawStepToCanvas(finalCanvas, 'canvas-depixelate', 0.5)
+
     // Done!
-    if (debug) timer.stop("generate-terrain")
+    if (debug) timer.stop('generate-terrain')
     return finalCanvas
   }
 }

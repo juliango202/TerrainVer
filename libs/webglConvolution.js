@@ -1,19 +1,18 @@
 /*
- * 
+ *
  * This is an adaptation of https://github.com/phoboslab/WebGLImageFilter
  * - Removed color filters and other parts not needed
  * - Partially updated syntax to ES6
  * - Updated code to run convolutions of arbitrary kernel size
  * - A few speed improvements
  * - Added Scale 3X filter
- * 
+ *
  * -------------------------------------------------------------
- * 
+ *
  * Adapted from WebGLImageFilter(MIT Licensed)
  * 2013, Dominic Szablewski - phoboslab.org
  *
  */
-
 
 const WebGLProgram = function (gl, vertexSource, fragmentSource) {
   const _collect = function (source, prefix, collection) {
@@ -66,8 +65,6 @@ const WebGLProgram = function (gl, vertexSource, fragmentSource) {
     this.uniform[u] = gl.getUniformLocation(this.id, u)
   }
 }
-
-
 
 const WebGLImageFilter = function () {
   let _drawCount = 0
@@ -270,7 +267,6 @@ const WebGLImageFilter = function () {
 
   const _filter = {}
 
-
   // ----------------------------------------------------------------------------
   // Convolution Filter
 
@@ -335,7 +331,7 @@ const WebGLImageFilter = function () {
       0, 1, 1, 1, 0
     ], false)
   }
-  
+
   _filter.erosion = function () {
     _filter.convolution.call(this, [
       0, 1, 1, 1, 0,
@@ -345,7 +341,7 @@ const WebGLImageFilter = function () {
       0, 1, 1, 1, 0
     ], true)
   }
-  
+
   _filter.dilation3 = function () {
     _filter.convolution.call(this, [
       1, 1, 1,
@@ -353,7 +349,7 @@ const WebGLImageFilter = function () {
       1, 1, 1
     ], false)
   }
-  
+
   _filter.dilhor = function () {
     _filter.convolution.call(this, [
       0, 0, 0,
@@ -361,7 +357,7 @@ const WebGLImageFilter = function () {
       0, 0, 0
     ], true)
   }
-  
+
   _filter.surface = function () {
     _filter.convolution.call(this, [
       0, -255, 0,
@@ -369,7 +365,7 @@ const WebGLImageFilter = function () {
       0, 0, 0
     ], false)
   }
-  
+
   _filter.threshold = function () {
     _filter.convolution.call(this, [
       0, 0, 0,
@@ -377,7 +373,7 @@ const WebGLImageFilter = function () {
       0, 0, 0
     ], false)
   }
-  
+
   _filter.thresholdblack = function () {
     _filter.convolution.call(this, [
       0, 0, 0,
@@ -393,28 +389,28 @@ const WebGLImageFilter = function () {
       0.111111111111, 0.111111111111, 0.111111111111
     ])
   }
-  
+
   _filter.gaussian3 = function () {
     _filter.convolution.call(this, [
-      0.077847,  0.123317,  0.077847,
-      0.123317,  0.195346,  0.123317,
-      0.077847,  0.123317,  0.077847
+      0.077847, 0.123317, 0.077847,
+      0.123317, 0.195346, 0.123317,
+      0.077847, 0.123317, 0.077847
     ])
   }
-  
+
   _filter.gaussian5 = function () {
     _filter.convolution.call(this, [
-      0.003765,  0.015019,  0.023792,  0.015019,  0.003765,
-      0.015019,  0.059912,  0.094907,  0.059912,  0.015019,
-      0.023792,  0.094907,  0.150342,  0.094907,  0.023792,
-      0.015019,  0.059912,  0.094907,  0.059912,  0.015019,
-      0.003765,  0.015019,  0.023792,  0.015019,  0.003765
+      0.003765, 0.015019, 0.023792, 0.015019, 0.003765,
+      0.015019, 0.059912, 0.094907, 0.059912, 0.015019,
+      0.023792, 0.094907, 0.150342, 0.094907, 0.023792,
+      0.015019, 0.059912, 0.094907, 0.059912, 0.015019,
+      0.003765, 0.015019, 0.023792, 0.015019, 0.003765
     ])
   }
-  
+
   // ----------------------------------------------------------------------------
   // Line erosion Filter
-  // 
+  //
 
   _filter.surfaceErosion = function () {
     const pixelSizeX = 1 / _width
@@ -431,19 +427,19 @@ const WebGLImageFilter = function () {
     'uniform vec2 px;',
 
     'void main(void) {',
-      'vec4 A = texture2D(texture, vUv - px);', // top left
-      'vec4 B = texture2D(texture, vec2(vUv.x - px.x, vUv.y) );', // mid left
-      'vec4 C = texture2D(texture, vec2(vUv.x - px.x, vUv.y + px.y) );', // bottom left
-      
-      'vec4 D = texture2D(texture, vec2(vUv.x + px.x, vUv.y - px.y));', // top right
-      'vec4 E = texture2D(texture, vec2(vUv.x + px.x, vUv.y) );', // mid right
-      'vec4 F = texture2D(texture, vUv + px );', // bottom right
+    'vec4 A = texture2D(texture, vUv - px);', // top left
+    'vec4 B = texture2D(texture, vec2(vUv.x - px.x, vUv.y) );', // mid left
+    'vec4 C = texture2D(texture, vec2(vUv.x - px.x, vUv.y + px.y) );', // bottom left
 
-      'if ((A.r == 0.0 && B.r == 0.0 && C.r == 0.0) || (D.r == 0.0 && E.r == 0.0 && F.r == 0.0)) {',
-        'gl_FragColor = vec4(0,0,0,0);',
-      '} else {',
-        'gl_FragColor = texture2D(texture, vUv);',
-      '}',
+    'vec4 D = texture2D(texture, vec2(vUv.x + px.x, vUv.y - px.y));', // top right
+    'vec4 E = texture2D(texture, vec2(vUv.x + px.x, vUv.y) );', // mid right
+    'vec4 F = texture2D(texture, vUv + px );', // bottom right
+
+    'if ((A.r == 0.0 && B.r == 0.0 && C.r == 0.0) || (D.r == 0.0 && E.r == 0.0 && F.r == 0.0)) {',
+    'gl_FragColor = vec4(0,0,0,0);',
+    '} else {',
+    'gl_FragColor = texture2D(texture, vUv);',
+    '}',
     '}'
   ].join('\n')
 
@@ -466,47 +462,47 @@ const WebGLImageFilter = function () {
     'uniform vec2 px;',
 
     'void main(void) {',    // from top to bottom, left to right
-      'vec4 A = texture2D(texture, vUv - px);', // top left
-      'vec4 B = texture2D(texture, vec2(vUv.x, vUv.y - px.y));', // top center
-      'vec4 C = texture2D(texture, vec2(vUv.x + px.x, vUv.y - px.y));', // top right
+    'vec4 A = texture2D(texture, vUv - px);', // top left
+    'vec4 B = texture2D(texture, vec2(vUv.x, vUv.y - px.y));', // top center
+    'vec4 C = texture2D(texture, vec2(vUv.x + px.x, vUv.y - px.y));', // top right
 
-      'vec4 D = texture2D(texture, vec2(vUv.x - px.x, vUv.y) );', // mid left
-      'vec4 E = texture2D(texture, vUv);', // mid center
-      'vec4 F = texture2D(texture, vec2(vUv.x + px.x, vUv.y) );', // mid right
+    'vec4 D = texture2D(texture, vec2(vUv.x - px.x, vUv.y) );', // mid left
+    'vec4 E = texture2D(texture, vUv);', // mid center
+    'vec4 F = texture2D(texture, vec2(vUv.x + px.x, vUv.y) );', // mid right
 
-      'vec4 G = texture2D(texture, vec2(vUv.x - px.x, vUv.y + px.y) );', // bottom left
-      'vec4 H = texture2D(texture, vec2(vUv.x, vUv.y + px.y) );', // bottom center
-      'vec4 I = texture2D(texture, vUv + px );', // bottom right
+    'vec4 G = texture2D(texture, vec2(vUv.x - px.x, vUv.y + px.y) );', // bottom left
+    'vec4 H = texture2D(texture, vec2(vUv.x, vUv.y + px.y) );', // bottom center
+    'vec4 I = texture2D(texture, vUv + px );', // bottom right
 
-      'if (B != H && D != F) {',
-        'vec4 E0 = D == B ? D : E;',
-        'vec4 E1 = (D == B && E != C) || (B == F && E != A) ? B : E;',
-        'vec4 E2 = B == F ? F : E;',
-        'vec4 E3 = (D == B && E != G) || (D == H && E != A) ? D : E;',
-        'vec4 E4 = E;',
-        'vec4 E5 = (B == F && E != I) || (H == F && E != C) ? F : E;',
-        'vec4 E6 = D == H ? D : E;',
-        'vec4 E7 = (D == H && E != I) || (H == F && E != G) ? H : E;',
-        'vec4 E8 = H == F ? F : E;',
-        
-        // Only take contribution from points that are not background points(i.e. alpha != 0)
-        'float nb = 0.0;',        
-        'vec4 R = vec4(0,0,0,1.0);',
-        'if (E0.a != 0.0) { R += E0; nb++; }',
-        'if (E1.a != 0.0) { R += E1; nb++; }',
-        'if (E2.a != 0.0) { R += E2; nb++; }',
-        'if (E3.a != 0.0) { R += E3; nb++; }',
-        'if (E4.a != 0.0) { R += E4; nb++; }',
-        'if (E5.a != 0.0) { R += E5; nb++; }',
-        'if (E6.a != 0.0) { R += E6; nb++; }',
-        'if (E7.a != 0.0) { R += E7; nb++; }',
-        'if (E8.a != 0.0) { R += E8; nb++; }',
-        'if (nb > 1.0) {',
-          'E = R / nb;',
-          'E.a = E0.a/9.0 + E1.a/9.0 + E2.a/9.0 + E3.a/9.0 + E4.a/9.0 + E5.a/9.0 + E6.a/9.0 + E7.a/9.0 + E8.a/9.0;',       // cannot factorize because of clamped max value
-        '}',
-      '}',
-      'gl_FragColor = E;',
+    'if (B != H && D != F) {',
+    'vec4 E0 = D == B ? D : E;',
+    'vec4 E1 = (D == B && E != C) || (B == F && E != A) ? B : E;',
+    'vec4 E2 = B == F ? F : E;',
+    'vec4 E3 = (D == B && E != G) || (D == H && E != A) ? D : E;',
+    'vec4 E4 = E;',
+    'vec4 E5 = (B == F && E != I) || (H == F && E != C) ? F : E;',
+    'vec4 E6 = D == H ? D : E;',
+    'vec4 E7 = (D == H && E != I) || (H == F && E != G) ? H : E;',
+    'vec4 E8 = H == F ? F : E;',
+
+    // Only take contribution from points that are not background points(i.e. alpha != 0)
+    'float nb = 0.0;',
+    'vec4 R = vec4(0,0,0,1.0);',
+    'if (E0.a != 0.0) { R += E0; nb++; }',
+    'if (E1.a != 0.0) { R += E1; nb++; }',
+    'if (E2.a != 0.0) { R += E2; nb++; }',
+    'if (E3.a != 0.0) { R += E3; nb++; }',
+    'if (E4.a != 0.0) { R += E4; nb++; }',
+    'if (E5.a != 0.0) { R += E5; nb++; }',
+    'if (E6.a != 0.0) { R += E6; nb++; }',
+    'if (E7.a != 0.0) { R += E7; nb++; }',
+    'if (E8.a != 0.0) { R += E8; nb++; }',
+    'if (nb > 1.0) {',
+    'E = R / nb;',
+    'E.a = E0.a/9.0 + E1.a/9.0 + E2.a/9.0 + E3.a/9.0 + E4.a/9.0 + E5.a/9.0 + E6.a/9.0 + E7.a/9.0 + E8.a/9.0;',       // cannot factorize because of clamped max value
+    '}',
+    '}',
+    'gl_FragColor = E;',
     '}'
   ].join('\n')
 }

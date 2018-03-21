@@ -6,22 +6,22 @@ export class Random {
     if (seed < 0 || seed >= 1) {
       throw new Error('Invalid seed: ' + seed + ', must be between [0,1).')
     }
-    this.seed = seed == 0 
+    this.seed = seed === 0
       ? 2147483646
       : Math.floor(seed * Math.pow(2, 53)) % 2147483647
   }
-  
+
   nextInt () {
     // Returns a pseudo-random integer value between 1 and 2^31 - 2
     this.seed = this.seed * 16807 % 2147483647
     return this.seed
   }
-  
+
   nextFloat () {
     // We know that result of next() will be 1 to 2147483646 (inclusive).
-    return (this.nextInt() - 1) / 2147483646;
+    return (this.nextInt() - 1) / 2147483646
   }
-  
+
   nextIntBetween (min, max) {
     return Math.floor(this.nextFloat() * (max - min + 1)) + min
   }
@@ -29,53 +29,53 @@ export class Random {
 
 // Convert hex color notation to RGB components
 // from https://stackoverflow.com/a/5624139/257272
-export function hexToRgb(hex) {
+export function hexToRgb (hex) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
   } : null
 }
 
 // Use canvas API to resize some ImageData
-function scaleImageData(imgData, destWidth, destHeight, isSmoothed) {
-  const srcCanvas = document.createElement("canvas")
+function scaleImageData (imgData, destWidth, destHeight, isSmoothed) {
+  const srcCanvas = document.createElement('canvas')
   srcCanvas.width = imgData.width
   srcCanvas.height = imgData.height
   srcCanvas.getContext('2d').putImageData(imgData, 0, 0)
-  
-  const dstCanvas = document.createElement("canvas")
+
+  const dstCanvas = document.createElement('canvas')
   dstCanvas.width = destWidth
   dstCanvas.height = destHeight
   const dstCtx = dstCanvas.getContext('2d')
-  
+
   dstCtx.imageSmoothingEnabled = isSmoothed
   dstCtx.mozImageSmoothingEnabled = isSmoothed
   dstCtx.webkitImageSmoothingEnabled = isSmoothed
   dstCtx.msImageSmoothingEnabled = isSmoothed
-  
+
   dstCtx.drawImage(srcCanvas, 0, 0, imgData.width, imgData.height, 0, 0, destWidth, destHeight)
-  return dstCtx.getImageData(0, 0, destWidth, destHeight);
+  return dstCtx.getImageData(0, 0, destWidth, destHeight)
 }
 
 // Draw src image to dest canvas, optionaly resizing by scaleFactor
-export function drawStepToCanvas(src, dest, scaleFactor) { 
+export function drawStepToCanvas (src, dest, scaleFactor) {
   scaleFactor = scaleFactor || 1
-  if (typeof dest === "string") {
+  if (typeof dest === 'string') {
     dest = document.getElementById(dest)
   }
-  dest.width  = Math.floor(src.width * scaleFactor)
+  dest.width = Math.floor(src.width * scaleFactor)
   dest.height = Math.floor(src.height * scaleFactor)
   if (src instanceof HTMLCanvasElement) {
-    dest.getContext('2d').drawImage(src, 0, 0, dest.width, dest.height);
+    dest.getContext('2d').drawImage(src, 0, 0, dest.width, dest.height)
   } else if (src instanceof ImageData) {
-    if (scaleFactor != 1 ) {
+    if (scaleFactor !== 1) {
       src = scaleImageData(src, dest.width, dest.height, false)
     }
-    dest.getContext('2d').putImageData(src, 0, 0);
+    dest.getContext('2d').putImageData(src, 0, 0)
   } else {
-    throw new Error("src should be a HTMLCanvasElement or ImageData object")
+    throw new Error('src should be a HTMLCanvasElement or ImageData object')
   }
 }
 
@@ -123,20 +123,20 @@ class Timer {
     if (!(name in this.entries)) {
       this.entries[name] = { time: null, last: 0, avg: 0, nb: 0 }
     }
-    this.entries[name].time = new Date();
+    this.entries[name].time = new Date()
   }
-  
+
   // Stop an iteration of the timer with the given name
   stop (name) {
     if (!(name in this.entries)) {
-      throw new Error("The timer '" + name + "' hasn't been started")
+      throw new Error('The timer ' + name + ' hasn\'t been started')
     }
     this.entries[name].last = (new Date()).getTime() - this.entries[name].time.getTime()
     this.entries[name].avg += this.entries[name].last
     this.entries[name].time = null
     this.entries[name].nb++
   }
-  
+
   // Write results to html elements with corresponding ids for the demo
   toHtmlElts () {
     const timerEltPrefix = 'timer-'
@@ -151,16 +151,16 @@ class Timer {
       elt.innerHTML = '(' + (this.entries['draw-terrain'].last + this.entries['position-generator'].last) + 'ms)'
     }
   }
-  
+
   // Write all timers info to a string that can be displayed in a textarea
   toString () {
-    var str = "--Timers--\n";
+    var str = '--Timers--\n'
     for (let i in this.entries) {
-      str += i + ": avg=" + this.entries[i].avg / this.entries[i].nb + " (" + this.entries[i].nb + " occurences)\n";
+      str += i + ': avg=' + this.entries[i].avg / this.entries[i].nb + ' (' + this.entries[i].nb + ' occurences)\n'
     }
-    return str;
+    return str
   }
-}  
+}
 
-export const timer = new Timer();
+export const timer = new Timer()
 

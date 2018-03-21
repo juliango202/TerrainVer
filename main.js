@@ -23,7 +23,7 @@ async function newTerrainGenerator () {
     debug: true,
     width: width - width % 2, // Make sure width is even
     height: height - height % 2, // Make sure height is even
-    terrainTypeImg: '/img/' + options.type + '.png',
+    terrainTypeImg: './img/' + options.type + '.png',
     noiseResolution: options.noise
   })
   generateTerrain()
@@ -48,9 +48,9 @@ async function renderTerrain () {
   toggleForm(false)
   const graphicsRenderer = await TerrainRenderer.fromImgUrl(terrainShape, {
     debug: true,
-    groundImg: '/img/ground.png',
-    backgroundImg: '/img/background.png',
-    charaImg: '/img/chara.png',
+    groundImg: './img/ground.png',
+    backgroundImg: './img/background.png',
+    charaImg: './img/chara.png',
     charaWidth: 44,
     charaHeight: 41,
     nbCharas: options.charas

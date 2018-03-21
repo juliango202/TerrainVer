@@ -1,20 +1,10 @@
 /*
  * 
- * This is a copy of https://github.com/josephg/noisejs
- * I only kept .
+ * This is a copy of https://github.com/phoboslab/js-hqx
+ * I only kept hq2x, see original github repo for hq3x and hq4x.
  * 
  * -------------------------------------------------------------
  * 
- * A speed-improved perlin and simplex noise algorithms for 2D.
- * 
- * Based on example code by Stefan Gustavson (stegu@itn.liu.se).
- * Optimisations by Peter Eastman (peastman@drizzle.stanford.edu).
- * Better rank ordering method by Stefan Gustavson in 2012.
- * Converted to Javascript by Joseph Gentle.
- *
- */
-
-/*
  * Copyright (C) 2003 Maxim Stepin ( maxst@hiend3d.com )
  *
  * Copyright (C) 2010 Cameron Zemek ( grom@zeminvaders.net )
@@ -206,7 +196,7 @@ var getImagePixels = function( image, x, y, width, height ) {
 
 
 window.hqx = function( img, scale ) {
-	// We can only scale with a factor of 2, see https://github.com/josephg/noisejs for methods to scale 3 and 4
+	// We can only scale with a factor of 2, see https://github.com/phoboslab/js-hqx for methods to scale 3 and 4
 	if( [2].indexOf(scale) === -1 ) {
 		return img;
 	}

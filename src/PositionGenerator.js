@@ -4,7 +4,7 @@ import { timer } from './utils.js'
 const DEFAULT_OPTIONS = {
   marginTop: 40,  // don't generate position too high
   marginRight: 1,
-  marginBottom: 60,  // don't generate position in water
+  marginBottom: 160,  // don't generate position in water
   marginLeft: 1
 }
 
@@ -82,7 +82,7 @@ export default class PositionGenerator {
     ctx.fillStyle = "rgba(255,0,0,1)";
     for (let curr = 0; curr < this.surfacePoints.length; curr++) {
       let currPt = this.surfacePoints[curr]
-      ctx.fillRect( currPt[0], currPt[1], 1, 1 )
+      ctx.fillRect( currPt[0] - 1, currPt[1] - 1, 3, 3 )
     }
   }
 }

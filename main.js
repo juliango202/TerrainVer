@@ -9,7 +9,7 @@ let options = {
   seed: Math.random(),
   noise: 35,
   type: 'type-1',
-  avatars: 10
+  charas: 9
 }
 
 // Instantiate a new TerrainGenerator
@@ -49,8 +49,10 @@ async function renderTerrain () {
     debug: true, 
     groundImg: '/img/ground.png', 
     backgroundImg: '/img/background.png',
-    avatarsImg: '/img/avatars.png',
-    nbAvatars: options.avatars
+    charaImg: '/img/chara.png',
+    charaWidth: 44,
+    charaHeight: 41,
+    nbCharas: options.charas
   })
   graphicsRenderer.drawTerrain(
     options.seed,
@@ -83,13 +85,8 @@ function waitForUi() {
   return new Promise(r => setTimeout(r, 20));
 }
 
+// Init form controls and stuff
 function pageInit () {
-  
-  // document.getElementById('showsurface').onchange = function() {
-  //   showsurface = this.checked;
-  //   newTerrainGenerator();
-  // }
-  
   for(let i = 0; i < document.genform.selshape.length; i++) {
     document.genform.selshape[i].onclick = function() {
       options.type = this.value
@@ -102,8 +99,8 @@ function pageInit () {
     newTerrainGenerator()
   }
 
-  document.getElementById('nbavatars').onchange = function() {
-    options.avatars = parseInt(this.value)
+  document.getElementById('nbcharas').onchange = function() {
+    options.charas = parseInt(this.value)
     renderTerrain ()
   }
 
@@ -136,6 +133,7 @@ function pageInit () {
     genform.classList.toggle("sticky", window.pageYOffset >= initOffset)
   }
   
+  // Everything is done, start generating a terrain
   newTerrainGenerator()
 }
 

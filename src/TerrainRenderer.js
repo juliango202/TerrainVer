@@ -6,10 +6,12 @@ const DEFAULT_OPTIONS = {
   debug: false,
   groundImg: null, 
   backgroundImg: null,
-  avatarsImg: null,
+  charaImg: null,
+  charaWidth: null,
+  charaHeight: null,
   borderWidth: 8,
   borderColor: '#89c53f',
-  nbAvatars: 10,
+  nbCharas: 10,
   waveDisplacement: 6,
   waveFps: 20,
   waveColor: "#2f5a7e",
@@ -24,7 +26,7 @@ export default class TerrainRenderer {
     const imgOpts = Object.assign({}, opts, { 
       groundImg: await loadImage(opts.groundImg),
       backgroundImg: await loadImage(opts.backgroundImg),
-      avatarsImg: await loadImage(opts.avatarsImg) 
+      charaImg: await loadImage(opts.charaImg) 
     })
     return new TerrainRenderer (shapeCanvas, imgOpts)
    }
@@ -36,8 +38,8 @@ export default class TerrainRenderer {
     if( !this.borderColor ) {
       throw new Error("Invalid borderColor value. Should be hex color like #aa3300")
     }
-    if (!this.options.groundImg || !this.options.backgroundImg || !this.options.avatarsImg) {
-      throw new Error("Required groundImg, backgroundImg, and avatarsImg options must be HTMLImageElement(or CanvasImageSource)")
+    if (!this.options.groundImg || !this.options.backgroundImg || !this.options.charaImg) {
+      throw new Error("Required groundImg, backgroundImg, and charaImg options must be HTMLImageElement(or CanvasImageSource)")
     }
     
     // Initalize properties
@@ -76,20 +78,29 @@ export default class TerrainRenderer {
     fgCanvas.height = this.terr.height;
     fgCtx.putImageData(this.terr, 0, 0)
     
-    //this.posGenerator.drawSurfacePoints(fgCanvas)
-    
-    // Draw avatars
-    for(var n = 0; n < this.options.nbAvatars; n++) {
-      var pt = this.posGenerator.getSurfacePoint(seed);
-      var AVATAR_WIDTH = 34;
-      var AVATAR_HEIGHT = 32;
-      var avatarchoice = randomGen.nextBetween(0,15)
-      fgCtx.drawImage(this.options.avatarsImg, avatarchoice * AVATAR_WIDTH, 0, AVATAR_WIDTH, AVATAR_HEIGHT, pt[0] - AVATAR_WIDTH/2, pt[1] - AVATAR_HEIGHT + 5, AVATAR_WIDTH, AVATAR_HEIGHT)
+    if (this.options.debug) {
+      drawStepToCanvas(fgCanvas, "canvas-render")
+      drawStepToCanvas(fgCanvas, "canvas-surface")
+      this.posGenerator.drawSurfacePoints(document.getElementById("canvas-surface"))
     }
     
-    this.drawWave(fgWaterCanvas, this.terr.width, 160, 21)
+    // Draw characters
+    // Here we expect an image that is a grid of characters that we choose from randomly
+    const charaImg = this.options.charaImg
+    const charaW = this.options.charaWidth || charaImg.width
+    const charaH = this.options.charaHeight || charaImg.height
+    const charaCol = charaImg.width / charaW
+    const charaRow = charaImg.height / charaH
+    for(let n = 0; n < this.options.nbCharas; n++) {
+      const pt = this.posGenerator.getSurfacePoint(seed);
+      const choiceCharaRow = randomGen.nextBetween(0,charaRow - 1)
+      const choiceCharaCol = randomGen.nextBetween(0,charaCol - 1)
+      fgCtx.drawImage(charaImg, choiceCharaCol * charaW, choiceCharaRow * charaH, charaW, charaH, pt[0] - charaW/2, pt[1] - charaH + 10, charaW, charaH)
+    }
     
-    if (this.options.debug) drawStepToCanvas(fgCanvas, "canvas-render")
+    if (this.options.debug) drawStepToCanvas(fgCanvas, "canvas-chara")
+    
+    this.drawWave(fgWaterCanvas, this.terr.width, 160, 21)
   }
   
   // Wave code adapted from https://codepen.io/jeffibacache/pen/tobCk
@@ -169,6 +180,7 @@ export default class TerrainRenderer {
           for (let bw = 1; bw <= borderWidth; bw++) {
             if (terrainShape[(x + (y - bw) * w) * 4] === 0) {
               isBorder = true
+              break
             }
           }
         }

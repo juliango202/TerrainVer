@@ -1,6 +1,6 @@
 import convolution from '../libs/webglConvolution.js'
 import PositionGenerator from './PositionGenerator.js'
-import { Random, loadImage, getHtmlImageData, drawStepToCanvas, hexToRgb, timer }  from './utils.js'
+import { Random, loadImage, getHtmlImageData, drawStepToCanvas, hexToRgb, timer } from './utils.js'
 
 const DEFAULT_OPTIONS = {
   debug: false,
@@ -28,14 +28,14 @@ export default class TerrainRenderer {
       backgroundImg: await loadImage(opts.backgroundImg),
       charaImg: await loadImage(opts.charaImg)
     })
-    return new TerrainRenderer (shapeCanvas, imgOpts)
-   }
+    return new TerrainRenderer(shapeCanvas, imgOpts)
+  }
 
   constructor (shapeCanvas, opts) {
     // Check option values
     this.options = Object.assign({}, DEFAULT_OPTIONS, opts)
     this.borderColor = hexToRgb(this.options.borderColor)
-    if( !this.borderColor ) {
+    if (!this.borderColor) {
       throw new Error('Invalid borderColor value. Should be hex color like #aa3300')
     }
     if (!this.options.groundImg || !this.options.backgroundImg || !this.options.charaImg) {
@@ -63,7 +63,7 @@ export default class TerrainRenderer {
     const randomGen = new Random(seed)
 
     // Draw background
-    bgCanvas.width  = this.terr.width
+    bgCanvas.width = this.terr.width
     bgCanvas.height = this.terr.height
     bgCanvas.getContext('2d').putImageData(this.background, 0, 0)
 
@@ -108,11 +108,11 @@ export default class TerrainRenderer {
     const charaH = this.options.charaHeight || charaImg.height
     const charaCol = charaImg.width / charaW
     const charaRow = charaImg.height / charaH
-    for(let n = 0; n < this.options.nbCharas; n++) {
+    for (let n = 0; n < this.options.nbCharas; n++) {
       const pt = this.posGenerator.getSurfacePoint(seed)
-      const choiceCharaRow = randomGen.nextIntBetween(0,charaRow - 1)
-      const choiceCharaCol = randomGen.nextIntBetween(0,charaCol - 1)
-      canvasCtx.drawImage(charaImg, choiceCharaCol * charaW, choiceCharaRow * charaH, charaW, charaH, pt[0] - charaW/2, pt[1] - charaH + 10, charaW, charaH)
+      const choiceCharaRow = randomGen.nextIntBetween(0, charaRow - 1)
+      const choiceCharaCol = randomGen.nextIntBetween(0, charaCol - 1)
+      canvasCtx.drawImage(charaImg, choiceCharaCol * charaW, choiceCharaRow * charaH, charaW, charaH, pt[0] - charaW / 2, pt[1] - charaH + 10, charaW, charaH)
     }
   }
 
@@ -137,26 +137,27 @@ export default class TerrainRenderer {
       context.beginPath()
       context.moveTo(0, waveOffset + Math.sin(offset) * Math.cos(1) + (height >> 1))
 
-      for(let i = 0; i < Math.PI * 2; i += 0.4)
-      {
+      for (let i = 0; i < Math.PI * 2; i += 0.4) {
         context.lineWidth = 140
         context.lineTo((i / Math.PI * 2) * width, waveOffset + Math.sin(i + offset) * waveDisplacement + (height >> 1))
       }
       context.stroke()
-      offset += (elapsed/700.0)
+      offset += (elapsed / 700.0)
     }
 
     // Drawloop is always called when rendering a frame but we draw
     // the waves with drawFrame() only at a specific framerate.
-    let start = Date.now(), then = start, now
+    let start = Date.now()
+    let then = start
+    let now = null
     let drawLoop = () => {
       if (waveDuration && now - start > waveDuration) return
       now = Date.now()
       waveCanvas.waveAnim = requestAnimationFrame(drawLoop)
       const elapsed = now - then
       if (elapsed > fpsInterval) {
-          then = now - (elapsed % fpsInterval)
-          drawFrame(elapsed)
+        then = now - (elapsed % fpsInterval)
+        drawFrame(elapsed)
       }
     }
     drawLoop()
@@ -214,13 +215,13 @@ export default class TerrainRenderer {
         terrain[2 + pix] = ground[2 + groundPix]
 
         if (terrainShape[(x + (y - borderWidth - 1) * w) * 4] === 0) {
-            // Pixel is just below the terrain border
-            // Use alpha from the shape border top pixel for blending this pixel too
-            // This will antialiase the bottom edge of the terrain border
-            const alpha = terrainShape[(x + (y - borderWidth) * w) * 4] / 255.0
-            terrain[pix] = terrain[pix] * alpha + this.borderColor.r * (1.0 - alpha)
-            terrain[1+pix] = terrain[1+pix] * alpha + this.borderColor.g * (1.0 - alpha)
-            terrain[2+pix] = terrain[2+pix] * alpha + this.borderColor.b * (1.0 - alpha)
+          // Pixel is just below the terrain border
+          // Use alpha from the shape border top pixel for blending this pixel too
+          // This will antialiase the bottom edge of the terrain border
+          const alpha = terrainShape[(x + (y - borderWidth) * w) * 4] / 255.0
+          terrain[pix] = terrain[pix] * alpha + this.borderColor.r * (1.0 - alpha)
+          terrain[1 + pix] = terrain[1 + pix] * alpha + this.borderColor.g * (1.0 - alpha)
+          terrain[2 + pix] = terrain[2 + pix] * alpha + this.borderColor.b * (1.0 - alpha)
         }
       }
     }

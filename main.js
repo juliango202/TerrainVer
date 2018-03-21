@@ -49,7 +49,7 @@ async function renderTerrain () {
   const graphicsRenderer = await TerrainRenderer.fromImgUrl(terrainShape, {
     debug: true,
     groundImg: './img/ground.png',
-    backgroundImg: './img/background.png',
+    backgroundImg: './img/background.jpg',
     charaImg: './img/chara.png',
     charaWidth: 44,
     charaHeight: 41,

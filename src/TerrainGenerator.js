@@ -1,4 +1,5 @@
 import convolution from '../libs/webglConvolution.js'
+import hqx from '../libs/hqx.js'
 import { perlin2, seed as noiseSeed } from '../libs/noiseGen.js'
 import { loadImage, getHtmlImageData, drawStepToCanvas, timer } from './utils.js'
 
@@ -182,7 +183,7 @@ export default class TerrainGenerator {
   magnify () {
     const tempCanvas = document.createElement('canvas')
     drawStepToCanvas(this.terr, tempCanvas)
-    return window.hqx(tempCanvas, 2)
+    return hqx(tempCanvas, 2)
   }
 
   // Generate a terrain and return a html Canvas object representing it(red on black image)

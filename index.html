@@ -23,7 +23,7 @@
     a {outline:none !important; font-weight:bold; text-decoration:none;}
     a:link {color:#c00;}
     a:visited {color:#606;}
-    a:hover {color:#606;}
+    a:hover {color:#606; text-decoration:underline;}
     a:active {color:#900; outline:none;}
 
     h1 {
@@ -249,8 +249,8 @@
   <h1>TerrainVer<br><i class="normal">Worms-style cartoon terrain in JavaScript</i></h1>
   <div class="textbloc limitedwidth">
     <p>
-    Last year we started a for-the-fun project with some colleagues: a Worms clone in JavaScript. While we didn't get very far, I had good results(and great fun!) working on terrain generation.
-    It's now <a href="https://github.com/juliango202">open source</a> and this page will serve as both a detailed explanation of the algorithm and a demo:
+    Last year we started a for-the-fun project with <a href="https://github.com/kombucha">some</a> <a href="https://github.com/pOxaes">colleagues</a>: a Worms clone in JavaScript. While we didn't get very far, I had good results(and great fun!) working on terrain generation.
+    It's now <a href="https://github.com/juliango202/TerrainVer">open source</a> and this page will serve as both a detailed explanation of the algorithm and a demo:
     </p>
   </div>
 
@@ -300,7 +300,7 @@
 
   <div class="textbloc limitedwidth">
     <p>
-      Pretty neat, huh? Graphics come from my colleague <a href="https://github.com/pOxaes">pOxaes</a> plus Android blob smileys.<br>
+      Pretty neat, huh? Graphics come from my colleague <a href="https://github.com/pOxaes">pOxaes</a> plus the Android blob smileys.<br>
       I'll explain the two main parts to arrive at this image: how to generate a random terrain mask,
       and how to apply a (simple) rendering algorithm.
       Like most projects the general ideas are easy to understand but getting the details right is tricky!
@@ -606,7 +606,7 @@
       <p>
         Thanks to all the API available in modern browsers we've been able to do some fast image processing and generate a pretty decent
         terrain all client-side. I haven't covered all the details but the code is now open source, hopefully with enough comments,
-        so I invite you to <a href="">check it out</a> if you want to know more.
+        so I invite you to <a href="https://github.com/juliango202/TerrainVer">check it out</a> if you want to know more.
         And maybe reuse it for your own game?
         <img style="vertical-align: middle" src="./img/demo/smile.png">
       </p>

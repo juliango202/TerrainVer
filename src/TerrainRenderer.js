@@ -174,8 +174,8 @@ export default class TerrainRenderer {
     const groundH = this.ground.height
     const borderWidth = this.options.borderWidth
 
-    for (var y = 0; y < h; y++) {
-      for (var x = 0; x < w; x++) {
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
         const pix = (x + y * w) * 4
 
         if (terrainShape[pix] === 0) {

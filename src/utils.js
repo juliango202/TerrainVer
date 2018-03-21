@@ -154,7 +154,7 @@ class Timer {
 
   // Write all timers info to a string that can be displayed in a textarea
   toString () {
-    var str = '--Timers--\n'
+    let str = '--Timers--\n'
     for (let i in this.entries) {
       str += i + ': avg=' + this.entries[i].avg / this.entries[i].nb + ' (' + this.entries[i].nb + ' occurences)\n'
     }

@@ -76,7 +76,7 @@ const WebGLImageFilter = function () {
   let _width = -1
   let _height = -1
   let _vertexBuffer = null
-  var _currentProgram = null
+  let _currentProgram = null
   let _canvas = document.createElement('canvas')
   let gl = _canvas.getContext('webgl') || _canvas.getContext('experimental-webgl')
 
@@ -284,41 +284,41 @@ const WebGLImageFilter = function () {
   const convolutionShaderCache = new Map()
   const generateConvolutionShader = function (matrix, inverseColors = false) {
     const shaderKey = matrix.toString() + inverseColors.toString()
-    // if (!convolutionShaderCache.has(shaderKey)) {
-    const matrixSize = matrix.length
-    if (matrixSize < 0 || matrixSize > 1000 || Math.sqrt(matrixSize) % 1 !== 0) throw new Error('invalid matrixSize')
-    let convSize = Math.sqrt(matrixSize)
-    if (convSize % 2 !== 1) throw new Error('invalid convSize')
-    let halfSize = Math.floor(convSize / 2)
-    let idx = 0
-    let inverseColorsStr = inverseColors ? '1.0 - ' : ''
-    let fragColor = []
-    let shader = [
-      'precision highp float;',
-      'varying vec2 vUv;',
-      'uniform sampler2D texture;',
-      'uniform vec2 px;',
-      'void main(void) {']
-    for (let i = 0; i < convSize; i++) {
-      for (let j = 0; j < convSize; j++) {
-        if (matrix[idx] !== 0 || (i === halfSize && j === halfSize)) {
-          shader.push('vec4 c' + i + '_' + j + ' = ' + inverseColorsStr + 'texture2D(texture, vec2(vUv.x + ' + (j - halfSize).toFixed(1) + '*px.x, vUv.y + ' + (i - halfSize).toFixed(1) + '*px.y));')
-          if (matrix[idx] === 1 || matrix[idx] === 1.0) {
-            fragColor.push('c' + i + '_' + j)
-          } else if (matrix[idx] % 1 === 0) {  // Force float notation even for rounded numbers
-            fragColor.push('c' + i + '_' + j + ' * ' + matrix[idx].toFixed(1))
-          } else {
-            fragColor.push('c' + i + '_' + j + ' * ' + matrix[idx])
+    if (!convolutionShaderCache.has(shaderKey)) {
+      const matrixSize = matrix.length
+      if (matrixSize < 0 || matrixSize > 1000 || Math.sqrt(matrixSize) % 1 !== 0) throw new Error('invalid matrixSize')
+      let convSize = Math.sqrt(matrixSize)
+      if (convSize % 2 !== 1) throw new Error('invalid convSize')
+      let halfSize = Math.floor(convSize / 2)
+      let idx = 0
+      let inverseColorsStr = inverseColors ? '1.0 - ' : ''
+      let fragColor = []
+      let shader = [
+        'precision highp float;',
+        'varying vec2 vUv;',
+        'uniform sampler2D texture;',
+        'uniform vec2 px;',
+        'void main(void) {']
+      for (let i = 0; i < convSize; i++) {
+        for (let j = 0; j < convSize; j++) {
+          if (matrix[idx] !== 0 || (i === halfSize && j === halfSize)) {
+            shader.push('vec4 c' + i + '_' + j + ' = ' + inverseColorsStr + 'texture2D(texture, vec2(vUv.x + ' + (j - halfSize).toFixed(1) + '*px.x, vUv.y + ' + (i - halfSize).toFixed(1) + '*px.y));')
+            if (matrix[idx] === 1 || matrix[idx] === 1.0) {
+              fragColor.push('c' + i + '_' + j)
+            } else if (matrix[idx] % 1 === 0) {  // Force float notation even for rounded numbers
+              fragColor.push('c' + i + '_' + j + ' * ' + matrix[idx].toFixed(1))
+            } else {
+              fragColor.push('c' + i + '_' + j + ' * ' + matrix[idx])
+            }
           }
+          idx++
         }
-        idx++
       }
+      shader.push('gl_FragColor = ' + inverseColorsStr + '(' + fragColor.join(' + ') + ');')
+      shader.push('gl_FragColor.a = ' + inverseColorsStr + 'c' + halfSize + '_' + halfSize + '.a;')
+      shader.push('}')
+      convolutionShaderCache.set(shaderKey, shader.join('\n'))
     }
-    shader.push('gl_FragColor = ' + inverseColorsStr + '(' + fragColor.join(' + ') + ');')
-    shader.push('gl_FragColor.a = ' + inverseColorsStr + 'c' + halfSize + '_' + halfSize + '.a;')
-    shader.push('}')
-    convolutionShaderCache.set(shaderKey, shader.join('\n'))
-    // }
     return convolutionShaderCache.get(shaderKey)
   }
 

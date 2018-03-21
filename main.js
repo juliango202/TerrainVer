@@ -1,6 +1,6 @@
-import TerrainGenerator from 'game/terrainver/TerrainGenerator'
-import TerrainRenderer from 'game/terrainver/TerrainRenderer'
-import { timer } from 'game/terrainver/utils'
+import TerrainGenerator from './src/TerrainGenerator.js'
+import TerrainRenderer from './src/TerrainRenderer.js'
+import { timer } from './src/utils.js'
 
 const maxTerrainWidth = 2048
 const clientWidth = document.documentElement.clientWidth

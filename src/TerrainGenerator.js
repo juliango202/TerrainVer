@@ -1,6 +1,6 @@
 import convolution from '../libs/webglConvolution.js'
 import { perlin2, seed as noiseSeed } from '../libs/noiseGen.js'
-import { loadImage, getHtmlImageData, drawStepToCanvas } from './utils.js'
+import { loadImage, getHtmlImageData, drawStepToCanvas, timer } from './utils.js'
 
 const DEFAULT_OPTIONS = {
   debug: false,
@@ -190,40 +190,56 @@ export default class TerrainGenerator {
     if (seed < 0 || seed >= 1) {
       throw new Error('Invalid seed: ' + seed + ', must be between [0,1).')
     }
-    const startTime = new Date()
+    const debug = this.options.debug
+    if (debug) timer.start("generate-terrain")
 
     // Start with a copy of the terrain type image
+    if (debug) timer.start("terrain-type")
     this.terr.data.set(this.terrainType.data)
-    if (this.options.debug) drawStepToCanvas(this.terr, "canvas-terrain")      
+    if (debug) timer.stop("terrain-type")
+    if (debug) drawStepToCanvas(this.terr, "canvas-terrain")      
 
     // Extend terrain accross area defined by random Perlin noise
+    if (debug) timer.start("perlin-noise")
     this.perlinNoise(seed)
-    if (this.options.debug) drawStepToCanvas(this.terr, "canvas-perlin")
+    if (debug) timer.stop("perlin-noise")
+    if (debug) drawStepToCanvas(this.terr, "canvas-perlin")
       
+    if (debug) timer.start("floodfill-perlin")
     this.floodFill(this.terrainTypePoints.fg.slice(), {})
-    if (this.options.debug) drawStepToCanvas(this.terr, "canvas-fperlin")
+    if (debug) timer.stop("floodfill-perlin")
+    if (debug) drawStepToCanvas(this.terr, "canvas-fperlin")
     
+    if (debug) timer.start("remove-perlin")
     this.removePerlin()
-    if (this.options.debug) drawStepToCanvas(this.terr, "canvas-rperlin")
+    if (debug) timer.stop("remove-perlin")
+    if (debug) drawStepToCanvas(this.terr, "canvas-rperlin")
 
     // Cleanup terrain shape through convolutions
+    if (debug) timer.start("dilation")
     convolution(['dilation', 'dilation', 'dilation', 'dilation', 'dilation'], this.terr, this.terr)
-    if (this.options.debug) drawStepToCanvas(this.terr, "canvas-dilation")
+    if (debug) timer.stop("dilation")
+    if (debug) drawStepToCanvas(this.terr, "canvas-dilation")
       
+    if (debug) timer.start("nohole")
     this.paintBackground()
-    if (this.options.debug) drawStepToCanvas(this.terr, "canvas-paintbg")
+    if (debug) drawStepToCanvas(this.terr, "canvas-paintbg")
     this.removeHoles()
+    if (debug) timer.stop("nohole")
       
+    if (debug) timer.start("erosion")
     convolution(['erosion', 'erosion', 'erosion', 'erosion'], this.terr, this.terr)
-    if (this.options.debug) drawStepToCanvas(this.terr, "canvas-erosion")
+    if (debug) timer.stop("erosion")
+    if (debug) drawStepToCanvas(this.terr, "canvas-erosion")
 
     // Magnify result to final size using hq2x algorithm
+    if (debug) timer.start("depixelate")
     const finalCanvas = this.magnify()
-    if ( this.options.debug ) drawStepToCanvas(finalCanvas, "canvas-antialias", 0.5)
+    if (debug) timer.stop("depixelate")
+    if ( debug ) drawStepToCanvas(finalCanvas, "canvas-depixelate", 0.5)
       
     // Done!
-    console.log('Generated terrain seed(' + seed + ') duration(' + (new Date() - startTime) + 'ms)')
-
+    if (debug) timer.stop("generate-terrain")
     return finalCanvas
   }
 }

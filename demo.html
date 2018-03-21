@@ -102,7 +102,7 @@
     .quiet {color:#999;}
     .pull-left {float:left; margin:0.5em 2em 1em 0;}
     .pull-right {float:right; margin:0.5em 0 1em 2em;}
-
+    
     @media (max-width:1024px) {
       body {font-size:100%;}
     }
@@ -129,7 +129,7 @@
     #genform {
       background: #fff;
       border-bottom: 1px solid #888;
-      margin: 0 10px 5px 10px;
+      margin: 0 10px 9px 10px;
       z-index: 20;
     }
     
@@ -145,7 +145,7 @@
     }
     
     #genform.sticky + p {
-      margin-top: 86px;
+      margin-top: 90px;
     }
     
     #charasform {
@@ -165,10 +165,11 @@
     #gen {
       font-size: 1.4em;
       padding: 12px 5px 12px 10px;
+      vertical-align: middle;
     }
-    #gen:disabled {
+/*    #gen:disabled {
       color: #f00;
-    }
+    }*/
     
     #result {
       /* We want result to be 100% width with a 0.625 aspect ratio */
@@ -191,16 +192,13 @@
       padding: 8px;
     }
     
-    #timing {
-    display: none;
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 800px;
-      height: 200px;
-      overflow-y: scroll;
-      font-size: 10px;
-      background: silver;
+    .timer {
+      font-weight: normal;
+      color: #999;
+      font-size: 60%;
+      padding-left: 0.5em;
+      text-transform: lowercase;
+      letter-spacing: 0;
     }
     
     canvas {
@@ -231,8 +229,6 @@
     }
     
     .article-img {
-    /*  height: 200px;
-      width: 100%;*/
       object-fit: cover;
     }
 
@@ -270,24 +266,23 @@
 
   <form name="genform" id="genform">
     <table id="gen-tb">
-<!--      <tr>
-        <th rowspan="2"><button id="gen" disabled>Generate &#8634;</button></th>
-        <th>Noise resolution:</th>
-        <th>Terrain type:</th>
-      </tr>-->
       <tr>
-        <td><button id="gen" disabled>Generate &#8634;</button></td>
-        <td>
-          Smaller noise <input id="noiseres" name="noiseres" type="range" min="10" max="60" value="35"> Larger noise
+        <td><button id="gen" disabled>Generate &#8634;</button>
+        <i id="timer-terrain-total" class="timer"></i>
+        <i id="timer-terrain-total-1" class="timer"></i>
+        <i id="timer-terrain-total-2" class="timer"></i>
         </td>
         <td>
-          <input type="radio" name="selshape" id="type1" value="type-1" checked/>
+          Smaller noise <input id="noiseres" name="noiseres" type="range" min="10" max="45" value="25"> Larger noise
+        </td>
+        <td>
+          <input type="radio" name="selshape" id="type1" value="type-1" />
           <label for="type1"><img class="terrtype" src="/img/type-1.png"></label>
 
           <input type="radio" name="selshape" id="type2" value="type-2" />
           <label for="type2"><img class="terrtype" src="/img/type-2.png"></label>
 
-          <input type="radio" name="selshape" id="type3" value="type-3" />
+          <input type="radio" name="selshape" id="type3" value="type-3" checked />
           <label for="type3"><img class="terrtype" src="/img/type-3.png"></label>
         </td>
       </tr>
@@ -315,7 +310,7 @@
   </div>
   
   <div class="textbloc limitedwidth">
-    <h3>Part I: Terrain generation</h3>
+    <h3>Part I: Terrain generation<i id="timer-generate-terrain" class="timer"></i></h3>
     <p>
       First let me acknowledge that my approach for terrain generation is based on 
       <a href="https://gamedev.stackexchange.com/a/20606">this great answer by bummzack</a>. 
@@ -328,7 +323,7 @@
 
   <div class="textbloc">
     <canvas class="pull-right step-canvas" id="canvas-terrain"></canvas>
-    <p class="lead">Step 1</p>
+    <p class="lead">Step 1<i id="timer-terrain-type" class="timer"></i></p>
     <p>
       First you start with the terrain type. <br>
       This is a low-resolution image that you can create with any image editor. Notice that there are three zones:
@@ -345,7 +340,7 @@
     <div class="clear"></div>
     
     <canvas class="pull-right step-canvas" id="canvas-perlin"></canvas>
-    <p class="lead">Step 2</p>
+    <p class="lead">Step 2<i id="timer-perlin-noise" class="timer"></i></p>
     <p>
       Next as suggested in <a href="https://gamedev.stackexchange.com/a/20606">bummzack answer</a> you add some <a href="https://en.wikipedia.org/wiki/Perlin_noise">Perlin noise</a>.<br>
     </p>
@@ -361,7 +356,7 @@
     <div class="clear"></div>
     
     <canvas class="pull-right step-canvas" id="canvas-fperlin"></canvas>
-    <p class="lead">Step 3</p>
+    <p class="lead">Step 3<i id="timer-floodfill-perlin" class="timer"></i></p>
     <p>
       In this step we <i>paint</i> the terrain on top of the noise.
     </p>
@@ -373,7 +368,7 @@
     <div class="clear"></div>
         
     <canvas class="pull-right step-canvas" id="canvas-rperlin"></canvas>
-    <p class="lead">Step 4</p>
+    <p class="lead">Step 4<i id="timer-remove-perlin" class="timer"></i></p>
     <p>
       Now we just have to get rid of the yellow part to see the first approximation of our terrain appears. 
       Yellow(Perlin noise) is replaced by black(not terrain).
@@ -385,7 +380,7 @@
     <p>
       For the next steps, we'll need to apply some <b>filters</b> to our terrain like the ones in an image editor software. 
       This is done via an operation called a <a href="https://en.wikipedia.org/wiki/Kernel_(image_processing)">convolution</a>, where the value of one pixel
-      depends on the values of all its neighboors. We can do this in JavaScript with nested for-loops but it would be very slow.
+      depends on the values of all its neighbours. We can do this in JavaScript with nested for-loops but it would be very slow.
       Instead we'll use a WebGL shader, which is a fancy way to make the GPU run all these for-loops efficiently.
     </p>
     <p>
@@ -395,7 +390,7 @@
     <div class="clear"></div>
 
     <canvas class="pull-right step-canvas" id="canvas-dilation"></canvas>
-    <p class="lead">Step 5</p>
+    <p class="lead">Step 5<i id="timer-dilation" class="timer"></i></p>
     <p>
       Next we apply a <b>dilation</b> filter, it makes our terrain grow.
     </p>
@@ -406,12 +401,12 @@
     <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHsAAAB5CAAAAAA8ZAGoAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4gMLDyUuOIB37QAAAOlJREFUaN7t2iEPwjAQhuHrQkX5mRjMBAIEjmS4WbD8R8xqGoohmdjnIGtJ31PL9ZJnXU5cLnPZikVnDduFvrvLZmZudTeb2WZ+XL7XfVLZ46iK/UGmh6e+cvO9ho2NjY2NjY39B3YFc+pNnfePSaZlsd/L9PWSRHa7s9mO8uVilOOtLE46/YqJXsPGxsbGxsbG/iI+81qQh0EveWWx1+kuyFmxlhlZ7mFPP9jljmd179DT59jY2NjY2NjY9dvsckWwy8XGxsbGxsbGLm43vsvlv1xsbGxsbGxsbOzl0FZ6Ts254L3ptTXjDZKiSOhDvDWnAAAAAElFTkSuQmCC" alt="" />
     </p>
     <p>
-    You don't want to dilate too much either, otherwise all our hollows and bumps would disapear.
+    You don't want to dilate too much either, otherwise all our hollows and bumps would disappear.
     </p>
     <div class="clear"></div>
 
     <canvas class="pull-right step-canvas" id="canvas-paintbg"></canvas>
-    <p class="lead">Step 6</p>
+    <p class="lead">Step 6<i id="timer-nohole" class="timer"></i></p>
     <p>
       In this step we want to get rid of the remaining holes in our terrain.
     </p>
@@ -426,7 +421,7 @@
     <div class="clear"></div>
     
     <canvas class="pull-right step-canvas" id="canvas-erosion"></canvas>
-    <p class="lead">Step 7</p>
+    <p class="lead">Step 7<i id="timer-erosion" class="timer"></i></p>
     <p>
       Now we can apply an <b>erosion</b> filter, to shrink our terrain back to the pre-dilation size.
     </p>
@@ -436,22 +431,22 @@
     </p>
     <div class="clear"></div>
     
-    <canvas class="pull-right step-canvas" id="canvas-antialias"></canvas>
-    <p class="lead">Step 8</p>
+    <canvas class="pull-right step-canvas" id="canvas-depixelate"></canvas>
+    <p class="lead">Step 8<i id="timer-depixelate" class="timer"></i></p>
     <p>
       Because the images on the right are reduced to give way to the explanations you will probably not see much of a difference,
-      but this last step is actually crucial and probably the most difficult to get right, it is about <b>antialiasing</b>.
+      but this last step is actually crucial and probably the most difficult to get right, it is about <b>anti-aliasing</b>.
     </p>
     <p>
       Up to here all the operations were in essence binary, a pixel is either terrain or not terrain. 
       Additionally, to speed things up we worked on images 4 times smaller than the final result we want.
-      This means that when scaled at the final size, our terrain has disgracious <a href="https://en.wikipedia.org/wiki/Jaggies">jaggies</a> at the contour.
+      This means that when scaled at the final size, our terrain has unpleasant <a href="https://en.wikipedia.org/wiki/Jaggies">jaggies</a> at the contour.
     </p>
     <p>
       To improve things I first tried to apply successive mean filters, or average filters, followed by a threshold pass. When repeated multiple times for
       both the red and the black regions, this greatly improves the contour but there is still some aliasing(<i>Avg</i> below).
-      Looking for a solution online, I learned that there is a <a href="https://en.wikipedia.org/wiki/Pixel-art_scaling_algorithms">number of algorithms</a> 
-      for my antialiasing/depixelating task, even some 
+      Looking for a solution online, I learned that there are a <a href="https://en.wikipedia.org/wiki/Pixel-art_scaling_algorithms">number of algorithms</a> 
+      for my anti-aliasing/depixelating task, even some 
       <a href="https://www.cg.tuwien.ac.at/research/publications/2015/KREUZER-2015-DPA/">recent research</a>. 
       I could implement <a href="http://www.scale2x.it/algorithm">Scale3x</a> as a filter, and found JavaScript libraries for the  
       <a href="https://github.com/carlosascari/2xBR-Filter">xBR</a> and <a href="https://github.com/phoboslab/js-hqx">hqx</a> algorithms. 
@@ -533,7 +528,7 @@
   </div>
     
   <div class="textbloc limitedwidth">
-    <h3>Part II: Terrain rendering</h3>
+    <h3>Part II: Terrain rendering<i id="timer-render-terrain" class="timer"></i></h3>
     <p>
       Now that we have our terrain mask, how do we make it look nice? If you were doing a real game, at this point you probably need
       to integrate with a game engine library with tools for background layers, texturing, animations, and more.
@@ -543,21 +538,21 @@
     
   <div class="textbloc">  
     <canvas class="pull-right step-canvas" id="canvas-render"></canvas>
-    <p class="lead">Step 9</p>
+    <p class="lead">Step 9<i id="timer-texturize" class="timer"></i></p>
     <p>
       In this texturing step we loop through the pixels of our mask one by one.
       If the current pixel is off in the terrain mask, we just set alpha to zero.
-      If it's terrain, we first set alpha to be the terrain mask value to keep hqx antialiasing.
+      If it's terrain, we first set alpha to be the terrain mask value to preserve hqx anti-aliasing.
       Then we count the pixels on top before we reach the edge of the terrain:
       if there are less than let's say 8 pixels we'll assign some border color value, otherwise the pixel will be ground. 
     </p>
     <p>
-     Ground pixels are textured from an image, and we apply a random translation to the image to add some variation.
+     Ground pixels are textured from an image, and we apply a random translation to the texture to add some variation.
     </p>
     <div class="clear"></div>
     
     <canvas class="pull-right step-canvas" id="canvas-surface"></canvas>
-    <p class="lead">Step 10</p>
+    <p class="lead">Step 10<i id="timer-position-generator" class="timer"></i></p>
     <p>
       Before we can drop some characters on our terrain, we need to find where they can fit.
       Easily enough the surface pixels are the pixels at the top edge of our border.
@@ -570,7 +565,7 @@
     <div class="clear"></div>
     
     <canvas class="pull-right step-canvas" id="canvas-chara"></canvas>
-    <p class="lead">Step 11</p>
+    <p class="lead">Step 11<i id="timer-characters" class="timer"></i></p>
     <p>
       Now we'd like to add some characters randomly, but with some minimal distance between them and ideally
       spread over the total length of the surface.
@@ -594,11 +589,11 @@
     <div class="clear"></div>
     
     <img class="pull-right step-canvas" src="/img/demo/water.gif">
-    <p class="lead">Step 12</p>
+    <p class="lead">Step 12<i id="timer-wave" class="timer"></i></p>
     <p>
       Finally for a touch of animation we'll add some water. 
       For that we can simply draw a semi-transparent sinus wave at regular interval. 
-      And to give a sense of depth we'll put one behind the terrain and one in front. 
+      To give a sense of depth we'll put one behind the terrain and one in front. 
     </p>
     <p>
       We end up with four layers to display: the background image, the background water, the rendered terrain, and the foreground water.
@@ -611,15 +606,13 @@
     <div class="textbloc limitedwidth">
       <h3>Conclusion</h3>
       <p>
-        Now that we have our terrain mask, how do we make it look nice? If you were doing a real game, at this point you probably need
-        to integrate with a game engine library with tools for background layers, texturing, animations, and more.
-        But because this is just a demo, we'll skip the library and do a simple rendering pass.
+        Thanks to all the API available in modern browsers we've been able to do some fast image processing and generate a pretty decent 
+        terrain all client-side. I haven't covered all the details but the code is now open source, hopefully with enough comments, 
+        so I invite you to <a href="">check it out</a> if you want to know more.
+        And maybe reuse it for your own game?
+        <img style="vertical-align: middle" src="/img/demo/smile.png">
       </p>
-    </div>  
-    
-    <textarea id="timing">
-    </textarea>
-    
+    </div>      
     
   </div>
 

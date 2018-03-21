@@ -5,7 +5,8 @@ const DEFAULT_OPTIONS = {
   marginTop: 40,  // don't generate position too high
   marginRight: 1,
   marginBottom: 160,  // don't generate position in water
-  marginLeft: 1
+  marginLeft: 1,
+  debug: false
 }
 
 // Use Halton sequence to generate positions
@@ -32,9 +33,9 @@ function dist2 (a,b) {
 export default class PositionGenerator {
 
   constructor (terrainShape, opts) {
-    timer.start("PositionGenerator")
     // Check options values
     this.options = Object.assign({}, DEFAULT_OPTIONS, opts)
+    if (this.options.debug) timer.start("position-generator")
     
     const surfaceImg = new ImageData(terrainShape.width, terrainShape.height)
     convolution(['surface','threshold','surfaceErosion','surfaceErosion','surfaceErosion'], terrainShape, surfaceImg)    
@@ -66,7 +67,7 @@ export default class PositionGenerator {
     
     this.surfacePoints = visited
     this.haltonIndex = 0
-    timer.stop("PositionGenerator")
+    if (this.options.debug) timer.stop("position-generator")
   }
 
   // Return next random surface point

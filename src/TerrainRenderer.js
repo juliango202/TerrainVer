@@ -1,6 +1,6 @@
 import convolution from '../libs/webglConvolution.js'
 import PositionGenerator from './PositionGenerator.js'
-import { RandomInt, loadImage, getHtmlImageData, drawStepToCanvas, hexToRgb }  from './utils.js'
+import { Random, loadImage, getHtmlImageData, drawStepToCanvas, hexToRgb, timer }  from './utils.js'
 
 const DEFAULT_OPTIONS = {
   debug: false,
@@ -45,7 +45,7 @@ export default class TerrainRenderer {
     // Initalize properties
     this.terrainShape = shapeCanvas.getContext('2d').getImageData(0, 0, shapeCanvas.width, shapeCanvas.height)
     this.terr = new ImageData(shapeCanvas.width, shapeCanvas.height)
-    this.posGenerator = new PositionGenerator(this.terrainShape)
+    this.posGenerator = new PositionGenerator(this.terrainShape, {debug: this.options.debug})
     
     // Read the background and ground images into ImageData objects
     this.background = getHtmlImageData(this.options.backgroundImg, { width: this.terr.width, height: this.terr.height })
@@ -58,7 +58,9 @@ export default class TerrainRenderer {
     if (seed < 0 || seed >= 1) {
       throw new Error('Invalid seed: ' + seed + ', must be between [0,1).')
     }
-    const randomGen = new RandomInt(seed)
+    const debug = this.options.debug
+    if (debug) timer.start("draw-terrain")
+    const randomGen = new Random(seed)
     
     // Draw background
     bgCanvas.width  = this.terr.width
@@ -68,9 +70,11 @@ export default class TerrainRenderer {
     this.drawWave(bgWaterCanvas, this.terr.width, 160, 15)
     
     // Draw terrain
-    this.groundOffsetX = randomGen.nextBetween(0, this.ground.width) // start at random X
-    this.groundOffsetY = randomGen.nextBetween(0, this.ground.height) // start at random Y
+    this.groundOffsetX = randomGen.nextIntBetween(0, this.ground.width) // start at random X
+    this.groundOffsetY = randomGen.nextIntBetween(0, this.ground.height) // start at random Y
+    if (debug) timer.start("texturize")
     this.texturize()
+    if (debug) timer.stop("texturize")
     
     // Draw result to fgCanvas
     const fgCtx = fgCanvas.getContext('2d')
@@ -78,14 +82,27 @@ export default class TerrainRenderer {
     fgCanvas.height = this.terr.height;
     fgCtx.putImageData(this.terr, 0, 0)
     
-    if (this.options.debug) {
+    if (debug) {
       drawStepToCanvas(fgCanvas, "canvas-render")
       drawStepToCanvas(fgCanvas, "canvas-surface")
       this.posGenerator.drawSurfacePoints(document.getElementById("canvas-surface"))
     }
     
     // Draw characters
-    // Here we expect an image that is a grid of characters that we choose from randomly
+    if (debug) timer.start("characters")
+    this.drawCharacters(seed, randomGen, fgCtx)
+    if (debug) timer.stop("characters")
+    
+    if (debug) drawStepToCanvas(fgCanvas, "canvas-chara")
+    if (debug) timer.start("wave")
+    this.drawWave(fgWaterCanvas, this.terr.width, 160, 21)
+    if (debug) timer.stop("wave")
+    
+    if (debug) timer.stop("draw-terrain")
+  }
+  
+  drawCharacters (seed, randomGen, canvasCtx) {
+    // Here we expect charaImg to be a grid of characters that we choose from randomly
     const charaImg = this.options.charaImg
     const charaW = this.options.charaWidth || charaImg.width
     const charaH = this.options.charaHeight || charaImg.height
@@ -93,14 +110,10 @@ export default class TerrainRenderer {
     const charaRow = charaImg.height / charaH
     for(let n = 0; n < this.options.nbCharas; n++) {
       const pt = this.posGenerator.getSurfacePoint(seed);
-      const choiceCharaRow = randomGen.nextBetween(0,charaRow - 1)
-      const choiceCharaCol = randomGen.nextBetween(0,charaCol - 1)
-      fgCtx.drawImage(charaImg, choiceCharaCol * charaW, choiceCharaRow * charaH, charaW, charaH, pt[0] - charaW/2, pt[1] - charaH + 10, charaW, charaH)
+      const choiceCharaRow = randomGen.nextIntBetween(0,charaRow - 1)
+      const choiceCharaCol = randomGen.nextIntBetween(0,charaCol - 1)
+      canvasCtx.drawImage(charaImg, choiceCharaCol * charaW, choiceCharaRow * charaH, charaW, charaH, pt[0] - charaW/2, pt[1] - charaH + 10, charaW, charaH)
     }
-    
-    if (this.options.debug) drawStepToCanvas(fgCanvas, "canvas-chara")
-    
-    this.drawWave(fgWaterCanvas, this.terr.width, 160, 21)
   }
   
   // Wave code adapted from https://codepen.io/jeffibacache/pen/tobCk
@@ -146,7 +159,8 @@ export default class TerrainRenderer {
           drawFrame(elapsed)
       }
     }
-    drawLoop();
+    drawLoop()
+    drawFrame(1)
   }
   
   texturize () {

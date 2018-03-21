@@ -8,7 +8,7 @@ let options = {
   w: Math.min(clientWidth, maxTerrainWidth),
   seed: Math.random(),
   noise: 35,
-  type: 'type-1',
+  type: 'type-3',
   charas: 9
 }
 
@@ -35,8 +35,12 @@ let terrainShape = null
 async function generateTerrain () {
   toggleForm (false)
   await waitForUi()
+  timer.start("terrain-total")
   terrainShape = terrainGenerator.generate(options.seed)
-  renderTerrain ()  
+  renderTerrain().then(() => {
+    timer.stop("terrain-total")
+    timer.toHtmlElts()
+  })
 }
 
 
@@ -44,7 +48,6 @@ async function generateTerrain () {
 async function renderTerrain () {
   if( !terrainShape ) return;
   toggleForm (false)
-  await waitForUi()
   const graphicsRenderer = await TerrainRenderer.fromImgUrl(terrainShape, {
     debug: true, 
     groundImg: '/img/ground.png', 
@@ -67,8 +70,6 @@ async function renderTerrain () {
     const url = window.location.protocol + "//" + window.location.host + window.location.pathname + '?terrain=' + btoa(JSON.stringify(options));
     window.history.pushState({path: url}, '', url)
   }
-  
-  document.getElementById('timing').innerHTML = timer.toString()
   toggleForm (true)
 }
 

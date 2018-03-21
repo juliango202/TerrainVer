@@ -1,7 +1,7 @@
 
-// Generate pseudo random integer between min and max(inclusive)
+// Generate deterministic pseudo random numbers from a seed in range [0,1)
 // Adapted from: https://gist.github.com/blixt/f17b47c62508be59987b
-export class RandomInt {
+export class Random {
   constructor (seed) {
     if (seed < 0 || seed >= 1) {
       throw new Error('Invalid seed: ' + seed + ', must be between [0,1).')
@@ -11,14 +11,19 @@ export class RandomInt {
       : Math.floor(seed * Math.pow(2, 53)) % 2147483647
   }
   
-  nextBetween (min, max) {
-    this.seed = this.seed * 16807 % 2147483647;
-    const randomFloat = (this.seed - 1) / 2147483646
-    return Math.floor(randomFloat * (max - min + 1)) + min
+  nextInt () {
+    // Returns a pseudo-random integer value between 1 and 2^31 - 2
+    this.seed = this.seed * 16807 % 2147483647
+    return this.seed
   }
   
-  next () {
-    return this.nextBetween(0, Math.pow(2, 53) - 1)
+  nextFloat () {
+    // We know that result of next() will be 1 to 2147483646 (inclusive).
+    return (this.nextInt() - 1) / 2147483646;
+  }
+  
+  nextIntBetween (min, max) {
+    return Math.floor(this.nextFloat() * (max - min + 1)) + min
   }
 }
 
@@ -109,7 +114,6 @@ export function loadImage (src) {
 
 // A simple class to time our methods
 class Timer {
-
   constructor () {
     this.entries = {}
   }
@@ -117,7 +121,7 @@ class Timer {
   // Start an iteration of the timer with the given name
   start (name) {
     if (!(name in this.entries)) {
-      this.entries[name] = { time: null, avg: 0, nb: 0 }
+      this.entries[name] = { time: null, last: 0, avg: 0, nb: 0 }
     }
     this.entries[name].time = new Date();
   }
@@ -127,12 +131,29 @@ class Timer {
     if (!(name in this.entries)) {
       throw new Error("The timer '" + name + "' hasn't been started")
     }
-    this.entries[name].avg += (new Date()).getTime() - this.entries[name].time.getTime();
-    this.entries[name].time = null;
-    this.entries[name].nb++;
+    this.entries[name].last = (new Date()).getTime() - this.entries[name].time.getTime()
+    this.entries[name].avg += this.entries[name].last
+    this.entries[name].time = null
+    this.entries[name].nb++
   }
   
-  toString() {
+  // Write results to html elements with corresponding ids for the demo
+  toHtmlElts () {
+    const timerEltPrefix = 'timer-'
+    for (let i in this.entries) {
+      const elt = document.getElementById(timerEltPrefix + i)
+      if (elt) {
+        elt.innerHTML = '(' + this.entries[i].last + 'ms)'
+      }
+    }
+    const elt = document.getElementById(timerEltPrefix + 'render-terrain')
+    if (elt && 'draw-terrain' in this.entries && 'position-generator' in this.entries) {
+      elt.innerHTML = '(' + (this.entries['draw-terrain'].last + this.entries['position-generator'].last) + 'ms)'
+    }
+  }
+  
+  // Write all timers info to a string that can be displayed in a textarea
+  toString () {
     var str = "--Timers--\n";
     for (let i in this.entries) {
       str += i + ": avg=" + this.entries[i].avg / this.entries[i].nb + " (" + this.entries[i].nb + " occurences)\n";

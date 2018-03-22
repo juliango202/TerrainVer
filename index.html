@@ -637,16 +637,11 @@
   </a>
 
   <!--
-    You can import main.js in browsers that support es6 module with the following command:
-
-    <script id="es6-script" type="module" src="main.js" async></script>
-
-    Otherwise use https://rollupjs.org to build a bundle first:
-
+    For browsers that don't support es6 modules
+    you can us https://rollupjs.org to build a bundle first:
     rollup main.js --o terrainver-bundle.js --f iife
-
-    and import that like I do:
+    and import that instead of the module import below
   -->
-  <script src="terrainver-bundle.js"></script>
+  <script id="es6-script" type="module" src="main.js" async></script>
 
 </body>

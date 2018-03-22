@@ -13,7 +13,7 @@
       font-size:120%;
       line-height:1.6;
       margin:0;
-      padding:2em 0 5em;
+      padding:2em 0 6em;
       background:rgb(253, 253, 253);
       margin:auto;
 
@@ -165,9 +165,6 @@
       padding: 12px 5px 12px 10px;
       vertical-align: middle;
     }
-/*    #gen:disabled {
-      color: #f00;
-    }*/
 
     #result {
       /* We want result to be 100% width with a 0.625 aspect ratio */
@@ -240,11 +237,32 @@
       font-family: monospace;
     }
 
+    .home {
+      display: block;
+      font-size: 80%;
+      font-family:  monospace;
+      color: #aaa !important;
+      font-weight: normal;
+
+      text-align: center;
+    }
+    .home svg {
+      margin-bottom: -4px;
+      vertical-align: middle;
+    }
   </style>
 
 </head>
 
 <body>
+
+  <a class="home" style="position: absolute; left: 1em; top: 1em;" href="/">
+    <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+      <path d="M0 0h24v24H0z" fill="none"></path>
+    </svg><br>
+    Home
+  </a>
 
   <h1>TerrainVer<br><i class="normal">Worms-style cartoon terrain in JavaScript</i></h1>
   <div class="textbloc limitedwidth">
@@ -265,10 +283,9 @@
   <form name="genform" id="genform">
     <table id="gen-tb">
       <tr>
-        <td><button id="gen" disabled>Generate &#8634;</button>
-        <i id="timer-terrain-total" class="timer"></i>
-        <i id="timer-terrain-total-1" class="timer"></i>
-        <i id="timer-terrain-total-2" class="timer"></i>
+        <td>
+          <button id="gen" disabled>Generate &#8634;</button>
+          <i id="timer-terrain-total" class="timer"></i>
         </td>
         <td>
           Smaller noise <input id="noiseres" name="noiseres" type="range" min="10" max="45" value="25"> Larger noise
@@ -613,6 +630,14 @@
     </div>
 
   </div>
+
+  <a class="home" style="position: relative; top: 7em;" href="/">
+    <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
+      <path d="M0 0h24v24H0z" fill="none"></path>
+    </svg><br>
+    Home
+  </a>
 
   <script type="module" src="main.js" async></script>
 </body>

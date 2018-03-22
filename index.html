@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width">
@@ -16,7 +15,6 @@
       padding:2em 0 6em;
       background:rgb(253, 253, 253);
       margin:auto;
-
       color:rgb(10, 10, 10);
     }
 
@@ -260,8 +258,7 @@
     <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
       <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
       <path d="M0 0h24v24H0z" fill="none"></path>
-    </svg><br>
-    Home
+    </svg>
   </a>
 
   <h1>TerrainVer<br><i class="normal">Worms-style cartoon terrain in JavaScript</i></h1>
@@ -639,5 +636,17 @@
     Home
   </a>
 
-  <script type="module" src="main.js" async></script>
+  <!--
+    You can import main.js in browsers that support es6 module with the following command:
+
+    <script id="es6-script" type="module" src="main.js" async></script>
+
+    Otherwise use https://rollupjs.org to build a bundle first:
+
+    rollup main.js --o terrainver-bundle.js --f iife
+
+    and import that like I do:
+  -->
+  <script src="terrainver-bundle.js"></script>
+
 </body>

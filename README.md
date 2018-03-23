@@ -1,9 +1,10 @@
 # TerrainVer
 Generate Worms-style cartoon terrain in JavaScript. You can see a full demo on [this page](https://juliango202.com/terrainver/).
+![Snap 1](https://juliango202.github.io/img/terrainver/terrain3.png)
 
-![Snap 1](https://juliango202.github.io/img/terrainver/terrain1.png)
+## Generate a random terrain mask
 
-Example to create a terrain mask(for browsers with [support for es6 modules](https://caniuse.com/es6-module)):
+For browsers with [support for es6 modules](https://caniuse.com/es6-module):
 ```html
 <script type="module">
 import TerrainGenerator from './src/TerrainGenerator.js'
@@ -19,13 +20,26 @@ TerrainGenerator.fromImgUrl({
   const terrainShape = terrainGenerator.generate(Math.random())
   document.body.appendChild(terrainShape)
 })
+</script>
 ```
 
-To support other browsers, put the javascript in a `main.js` file and create a bundle with [Rollup](https://rollupjs.org) that you import:
+To support other browsers, you can put the javascript in a `main.js` file and create a bundle with [Rollup](https://rollupjs.org) that you import:
 ```
 rollup main.js --o js-bundle.js --f iife
+<script type="javascript" src="js-bundle.js"></script>
+```
+
+If you want have already loaded some images that you want to use, you can call the constructor directly:
+```javascript
+const terrainGenerator = new TerrainGenerator({ width: 874, height: 546, ... })
+const terrainShape = terrainGenerator.generate(Math.random())
 ```
 
 The example above should produce an image like this:
-![Snap 2](https://juliango202.github.io/img/terrainver/shape.png)
+![Snap 2](https://juliango202.github.io/img/terrainver/shape2.png)
+
+## Simple rendering of a terrain mask
+
+
+
 

@@ -4,7 +4,7 @@ Generate Worms-style cartoon terrain in JavaScript. You can see a full demo on [
 ![Snap 1](https://juliango202.github.io/img/terrainver/terrain3.png)
 
 ## Generate a random terrain mask
-For browsers with [support for es6 modules](https://caniuse.com/es6-module):
+For browsers that [support es6 modules](https://caniuse.com/es6-module):
 ```html
 <script type="module">
 import TerrainGenerator from './src/TerrainGenerator.js'
@@ -24,7 +24,7 @@ TerrainGenerator.fromImgUrl({
 </script>
 ```
 
-To support other browsers, you can put the javascript in a `main.js` file and create a bundle with [Rollup](https://rollupjs.org) that you import:
+To support other browsers, you can put this javascript in a `main.js` file and create a bundle with [Rollup](https://rollupjs.org) that you import:
 ```
 rollup main.js --o js-bundle.js --f iife
 <script type="javascript" src="js-bundle.js"></script>

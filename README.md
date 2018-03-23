@@ -1,5 +1,6 @@
 # TerrainVer
 Generate Worms-style cartoon terrain in JavaScript. You can see a full demo on [this page](https://juliango202.com/terrainver/).
+
 ![Snap 1](https://juliango202.github.io/img/terrainver/terrain3.png)
 
 ## Generate a random terrain mask
@@ -29,9 +30,9 @@ rollup main.js --o js-bundle.js --f iife
 <script type="javascript" src="js-bundle.js"></script>
 ```
 
-If you want have already loaded some images that you want to use, you can call the constructor directly:
+If you have already loaded some images that you want to use, you can call the constructor directly:
 ```javascript
-const terrainGenerator = new TerrainGenerator({ width: 874, height: 546, ... })
+const terrainGenerator = new TerrainGenerator({ width: 874, height: 546, terrainTypeImg: myImgElt })
 const terrainShape = terrainGenerator.generate(Math.random())
 ```
 

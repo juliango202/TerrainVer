@@ -178,7 +178,7 @@ export default class TerrainRenderer {
       for (let x = 0; x < w; x++) {
         const pix = (x + y * w) * 4
 
-        if (terrainShape[pix] === 0) {
+        if (terrainShape[3 + pix] === 0) {
           // Pixel is not terrain
           terrain[pix] = 0
           terrain[1 + pix] = 0
@@ -188,7 +188,7 @@ export default class TerrainRenderer {
         }
 
         // Pixel is terrain
-        terrain[3 + pix] = terrainShape[pix]   // Copy alpha from antialised shape
+        terrain[3 + pix] = terrainShape[3 + pix]   // Copy alpha
 
         let isBorder = false
         if (borderWidth >= 1) {
@@ -218,7 +218,7 @@ export default class TerrainRenderer {
           // Pixel is just below the terrain border
           // Use alpha from the shape border top pixel for blending this pixel too
           // This will antialiase the bottom edge of the terrain border
-          const alpha = terrainShape[(x + (y - borderWidth) * w) * 4] / 255.0
+          const alpha = terrainShape[3 + (x + (y - borderWidth) * w) * 4] / 255.0
           terrain[pix] = terrain[pix] * alpha + this.borderColor.r * (1.0 - alpha)
           terrain[1 + pix] = terrain[1 + pix] * alpha + this.borderColor.g * (1.0 - alpha)
           terrain[2 + pix] = terrain[2 + pix] * alpha + this.borderColor.b * (1.0 - alpha)

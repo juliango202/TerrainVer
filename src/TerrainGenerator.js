@@ -5,6 +5,7 @@ import { loadImage, getHtmlImageData, drawStepToCanvas, timer } from './utils.js
 
 const DEFAULT_OPTIONS = {
   debug: false,
+  blackToAlpha: true,
   width: 1024,
   height: 612,
   noiseResolution: 35,
@@ -183,7 +184,7 @@ export default class TerrainGenerator {
   magnify () {
     const tempCanvas = document.createElement('canvas')
     drawStepToCanvas(this.terr, tempCanvas)
-    return hqx(tempCanvas, 2)
+    return hqx(tempCanvas, this.options.blackToAlpha)
   }
 
   // Generate a terrain and return a html Canvas object representing it(red on black image)
@@ -234,10 +235,10 @@ export default class TerrainGenerator {
     if (debug) drawStepToCanvas(this.terr, 'canvas-erosion')
 
     // Magnify result to final size using hq2x algorithm
-    if (debug) timer.start('depixelate')
+    if (debug) timer.start('magnify')
     const finalCanvas = this.magnify()
-    if (debug) timer.stop('depixelate')
-    if (debug) drawStepToCanvas(finalCanvas, 'canvas-depixelate', 0.5)
+    if (debug) timer.stop('magnify')
+    if (debug) drawStepToCanvas(finalCanvas, 'canvas-magnify', 0.5)
 
     // Done!
     if (debug) timer.stop('generate-terrain')

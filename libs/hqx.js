@@ -1,7 +1,8 @@
 /*
  *
- * This is a copy of https://github.com/phoboslab/js-hqx
+ * This is a slightly modified copy of https://github.com/phoboslab/js-hqx
  * I only kept hq2x, see original github repo for hq3x and hq4x.
+ * Added blackToAlpha option to switch channels before returning
  *
  * -------------------------------------------------------------
  *
@@ -184,13 +185,9 @@ const getImagePixels = (image, x, y, width, height) => {
     ctx.getImageDataHD(x, y, width, height);
 };
 
-
-export default function hqx (img, scale) {
-  // We can only scale with a factor of 2, see https://github.com/phoboslab/js-hqx for methods to scale 3 and 4
-  if (![2].includes(scale)) {
-    return img;
-  }
-
+// We can only scale with a factor of 2, see https://github.com/phoboslab/js-hqx for methods to scale 3 and 4
+export default function hqx (img, blackToAlpha) {
+  const scale = 2
   let orig;
   let origCtx;
   let scaled;
@@ -233,12 +230,22 @@ export default function hqx (img, scale) {
 
   let a;
   const destLength = dest.length;
-  for (let j = 0; j < destLength; j++) {
-    a = ((c = dest[j]) & 0xFF000000) >> 24;
-    scaledPixelsData[(index = j << 2) + 3] = a < 0 ? a + 256 : 0; // signed/unsigned :/
-    scaledPixelsData[index + 2] = (c & 0x00FF0000) >> 16;
-    scaledPixelsData[index + 1] = (c & 0x0000FF00) >> 8;
-    scaledPixelsData[index] = c & 0x000000FF;
+  if (blackToAlpha) {
+    for (let j = 0; j < destLength; j++) {
+      a = ((c = dest[j]) & 0xFF000000) >> 24;
+      scaledPixelsData[(index = j << 2) + 3] = c & 0x000000FF; // Expect black/red image, set alpha to red value
+      scaledPixelsData[index + 2] = 0;
+      scaledPixelsData[index + 1] = 0;
+      scaledPixelsData[index] = 255;
+    }
+  } else {
+    for (let j = 0; j < destLength; j++) {
+      a = ((c = dest[j]) & 0xFF000000) >> 24;
+      scaledPixelsData[(index = j << 2) + 3] = a < 0 ? a + 256 : 0; // signed/unsigned :/
+      scaledPixelsData[index + 2] = (c & 0x00FF0000) >> 16;
+      scaledPixelsData[index + 1] = (c & 0x0000FF00) >> 8;
+      scaledPixelsData[index] = c & 0x000000FF;
+    }
   }
   _src = src = null;
   _dest = dest = null;

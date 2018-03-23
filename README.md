@@ -62,7 +62,12 @@ TerrainRenderer.fromImgUrl(terrainShape, {
   charaImg: './img/chara.png', // Required, url of an image representing a grid of 'characters' to display
   charaWidth: 44, // Width of one character, if missing charaImg is assumed to be only one character
   charaHeight: 41, // Height of one character, if missing charaImg is assumed to be only one character
-  nbCharas: 7 // Optional, default 10, Number of characters to display in the rendering
+  nbCharas: 7, // Optional, default 10, Number of characters to display in the rendering
+  borderWidth: 8, // Optional, default 8, width of the terrain border
+  borderColor: '#89c53f', // Optional, default #89c53f, color of the terrain border
+  waveColor: '#2f5a7e', // Optional, default #2f5a7e, color of the water
+  waveFps: 20, // Optional, default 20, frame per second for the water animation
+  waveDuration: 60000 // Optional, default 60000, duration of the animation in milliseconds, use 0 for infinite
 }).then((terrainRenderer) => {
   terrainRenderer.drawTerrain(
     Math.random(),
@@ -73,6 +78,8 @@ TerrainRenderer.fromImgUrl(terrainShape, {
   )
 })
 ```
+
+Like for the terrain mask, if you have already loaded the images to use you can call the TerrainRenderer constructor directly.
 
 ![Snap 3](https://juliango202.github.io/img/terrainver/terrain4.png)
 

@@ -1,5 +1,14 @@
 <!DOCTYPE html>
 <head>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-116155742-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-116155742-1');
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width">
   <meta name="robots" content="all">
@@ -688,12 +697,36 @@
 
   <a href="https://github.com/juliango202/TerrainVer"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
 
+  <script type="text/javascript">
+    // Fallback mode will display screenshots if the demo does not work
+    function fallbackMode() {
+      var result = document.getElementById('result');
+      if (!result.className.match(/\bloading\b/)) return; // Demo seems to be working
+
+      var stepCanvases = document.getElementsByClassName('step-canvas');
+      for(var i = 0; i < stepCanvases.length; i++) {
+        var canvas = stepCanvases.item(i);
+        var img = document.createElement('img');
+        img.src = 'img/demo/fallback/' + canvas.id + '.png';
+        img.className = 'pull-right step-canvas';
+        canvas.parentNode.replaceChild(img, canvas);
+      }
+
+      var img = document.createElement('img');
+      img.src = 'img/demo/fallback/result.png';
+      result.parentNode.replaceChild(img, result);
+
+      document.body.className += ' fallback-mode';
+    }
+    setTimeout(function(){ fallbackMode() }, 7000);
+  </script>
+
   <!--
     For browsers that don't support es6 modules
     you can us https://rollupjs.org to build a bundle first:
     rollup main.js --o terrainver-bundle.js --f iife
     and import that instead of the module import below
   -->
-  <script id="es6-script" type="module" src="main.js" async></script>
+  <script type="module" src="main.js" async></script>
 
 </body>

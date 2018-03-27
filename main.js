@@ -140,27 +140,4 @@ function pageInit () {
   newTerrainGenerator()
 }
 
-// Fallback mode will display screenshots if the demo does not work
-function fallbackMode() {
-  var result = document.getElementById('result')
-  if (!result.className.match(/\bloading\b/)) return // Demo seems to be working
-
-  var stepCanvases = document.getElementsByClassName('step-canvas')
-  for(var i = 0; i < stepCanvases.length; i++)
-  {
-    var canvas = stepCanvases.item(i)
-    var img = document.createElement('img')
-    img.src = 'img/demo/fallback/' + canvas.id + '.png'
-    img.className = 'pull-right step-canvas'
-    canvas.parentNode.replaceChild(img, canvas)
-  }
-
-  var img = document.createElement('img')
-  img.src = 'img/demo/fallback/result.png'
-  result.parentNode.replaceChild(img, result)
-
-  document.body.className += ' fallback-mode'
-}
-setTimeout(function(){ fallbackMode() }, 7000)
-
 pageInit()

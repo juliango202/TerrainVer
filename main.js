@@ -81,7 +81,7 @@ function toggleForm (enabled) {
 }
 
 // This method just waits a bit to let the UI refresh
-// Ideally terrain stuff should be in a web worker instead but workers don't support ES6 modules yet
+// Ideally terrain stuff should be in a web worker instead but workers don't support Canvas API yet
 function waitForUi () {
   return new Promise(r => setTimeout(r, 20), err => console.log(err))
 }

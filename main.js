@@ -86,28 +86,6 @@ function waitForUi () {
   return new Promise(r => setTimeout(r, 20), err => console.log(err))
 }
 
-// Fallback mode will display screenshots if the demo does not work
-function fallbackMode() {
-  const result = document.getElementById('result')
-  if (!result.className.match(/\bloading\b/)) return // Demo seems to be working
-
-  const stepCanvases = document.getElementsByClassName('step-canvas')
-  for(let i = 0; i < stepCanvases.length; i++)
-  {
-    const canvas = stepCanvases.item(i)
-    const img = document.createElement('img')
-    img.src = 'img/demo/fallback/' + canvas.id + '.png'
-    img.className = 'pull-right step-canvas'
-    canvas.parentNode.replaceChild(img, canvas)
-  }
-
-  const img = document.createElement('img')
-  img.src = 'img/demo/fallback/result.png'
-  result.parentNode.replaceChild(img, result)
-
-  document.body.className += ' fallback-mode'
-}
-
 // Init form controls and stuff
 function pageInit () {
   for (let i = 0; i < document.genform.selshape.length; i++) {
@@ -162,8 +140,27 @@ function pageInit () {
   newTerrainGenerator()
 }
 
-setTimeout(function(){
-  fallbackMode()
-}, 7000)
+// Fallback mode will display screenshots if the demo does not work
+function fallbackMode() {
+  var result = document.getElementById('result')
+  if (!result.className.match(/\bloading\b/)) return // Demo seems to be working
+
+  var stepCanvases = document.getElementsByClassName('step-canvas')
+  for(var i = 0; i < stepCanvases.length; i++)
+  {
+    var canvas = stepCanvases.item(i)
+    var img = document.createElement('img')
+    img.src = 'img/demo/fallback/' + canvas.id + '.png'
+    img.className = 'pull-right step-canvas'
+    canvas.parentNode.replaceChild(img, canvas)
+  }
+
+  var img = document.createElement('img')
+  img.src = 'img/demo/fallback/result.png'
+  result.parentNode.replaceChild(img, result)
+
+  document.body.className += ' fallback-mode'
+}
+setTimeout(function(){ fallbackMode() }, 7000)
 
 pageInit()

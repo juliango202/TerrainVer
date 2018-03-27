@@ -164,6 +164,6 @@ function pageInit () {
 
 setTimeout(function(){
   fallbackMode()
-}, 6000)
+}, 7000)
 
 pageInit()

@@ -27,7 +27,7 @@ TerrainGenerator.fromImgUrl({
 To support other browsers, you can put this javascript in a `main.js` file and create a bundle with [Rollup](https://rollupjs.org) that you import:
 ```
 rollup main.js --o js-bundle.js --f iife
-<script type="javascript" src="js-bundle.js"></script>
+<script type="text/javascript" src="js-bundle.js"></script>
 ```
 
 The terrain type image is a low resolution image with red, blue, and black zones representing the general shape of a terrain.

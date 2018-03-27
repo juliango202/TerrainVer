@@ -31,7 +31,7 @@ rollup main.js --o js-bundle.js --f iife
 ```
 
 The terrain type image is a low resolution image with red, blue, and black zones representing the general shape of a terrain.
-See the explanation in [the demo page](https://juliango202.com/terrainver/) and type-x.png images in this repo for some examples.
+See the explanation in [the demo page](https://juliango202.com/terrainver/) and `type-x.png` images in this repo for some examples.
 
 If you have already loaded a terrain type image that you want to use, you can call the constructor directly:
 ```javascript

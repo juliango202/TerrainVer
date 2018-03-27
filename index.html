@@ -12,7 +12,7 @@
       font-size:120%;
       line-height:1.6;
       margin:0;
-      padding:2em 0 6em;
+      padding:2em 0 2em;
       background:rgb(253, 253, 253);
       margin:auto;
       color:rgb(10, 10, 10);
@@ -164,6 +164,18 @@
       vertical-align: middle;
     }
 
+    #loading-msg {
+      font-size: 48px;
+      position: relative;
+      left: 0;
+      right: 0;
+      top: 20px;
+      text-align: center;
+      color: #fff;
+      display: none;
+      font-family: monospace;
+    }
+
     #result {
       /* We want result to be 100% width with a 0.625 aspect ratio */
       /* content inside must be absolutely positioned */
@@ -173,6 +185,13 @@
       padding-bottom: 62.5%;
       box-sizing: border-box;
       overflow: hidden;
+    }
+    #result.loading {
+      background: #000;
+    }
+
+    #result.loading > #loading-msg {
+      display: block;
     }
 
     .steps-tb {
@@ -200,6 +219,10 @@
     .step-canvas {
       max-width: 50%;
       image-rendering: pixelated;
+    }
+    .step-canvas.loading {
+      min-width: 50%;
+      background: #000;
     }
 
     .textbloc {
@@ -269,7 +292,8 @@
     </p>
   </div>
 
-  <div id="result">
+  <div id="result" class="loading">
+    <div id="loading-msg">Loading...</div>
     <canvas id="bgcanvas" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 10;"></canvas>
     <canvas id="bgwater" style="position: absolute; left: 0; bottom: 0; right: 0; z-index: 11;opacity: 0.24;"></canvas>
     <canvas id="fgcanvas" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 12;"></canvas>
@@ -334,7 +358,7 @@
   </div>
 
   <div class="textbloc">
-    <canvas class="pull-right step-canvas" id="canvas-terrain"></canvas>
+    <canvas class="pull-right step-canvas loading" id="canvas-terrain"></canvas>
     <p class="lead">Step 1<i id="timer-terrain-type" class="timer"></i></p>
     <p>
       First you start with the terrain type. <br>
@@ -351,7 +375,7 @@
     </p>
     <div class="clear"></div>
 
-    <canvas class="pull-right step-canvas" id="canvas-perlin"></canvas>
+    <canvas class="pull-right step-canvas loading" id="canvas-perlin"></canvas>
     <p class="lead">Step 2<i id="timer-perlin-noise" class="timer"></i></p>
     <p>
       Next as suggested in <a href="https://gamedev.stackexchange.com/a/20606">bummzack answer</a> you add some <a href="https://en.wikipedia.org/wiki/Perlin_noise">Perlin noise</a>.<br>
@@ -367,7 +391,7 @@
     </p>
     <div class="clear"></div>
 
-    <canvas class="pull-right step-canvas" id="canvas-fperlin"></canvas>
+    <canvas class="pull-right step-canvas loading" id="canvas-fperlin"></canvas>
     <p class="lead">Step 3<i id="timer-floodfill-perlin" class="timer"></i></p>
     <p>
       In this step we <i>paint</i> the terrain on top of the noise.
@@ -379,7 +403,7 @@
     </p>
     <div class="clear"></div>
 
-    <canvas class="pull-right step-canvas" id="canvas-rperlin"></canvas>
+    <canvas class="pull-right step-canvas loading" id="canvas-rperlin"></canvas>
     <p class="lead">Step 4<i id="timer-remove-perlin" class="timer"></i></p>
     <p>
       Now we just have to get rid of the yellow part to see the first approximation of our terrain appears.
@@ -401,7 +425,7 @@
     </p>
     <div class="clear"></div>
 
-    <canvas class="pull-right step-canvas" id="canvas-dilation"></canvas>
+    <canvas class="pull-right step-canvas loading" id="canvas-dilation"></canvas>
     <p class="lead">Step 5<i id="timer-dilation" class="timer"></i></p>
     <p>
       Next we apply a <b>dilation</b> filter, it makes our terrain grow.
@@ -417,7 +441,7 @@
     </p>
     <div class="clear"></div>
 
-    <canvas class="pull-right step-canvas" id="canvas-paintbg"></canvas>
+    <canvas class="pull-right step-canvas loading" id="canvas-paintbg"></canvas>
     <p class="lead">Step 6<i id="timer-nohole" class="timer"></i></p>
     <p>
       In this step we want to get rid of the remaining holes in our terrain.
@@ -432,7 +456,7 @@
     </p>
     <div class="clear"></div>
 
-    <canvas class="pull-right step-canvas" id="canvas-erosion"></canvas>
+    <canvas class="pull-right step-canvas loading" id="canvas-erosion"></canvas>
     <p class="lead">Step 7<i id="timer-erosion" class="timer"></i></p>
     <p>
       Now we can apply an <b>erosion</b> filter, to shrink our terrain back to the pre-dilation size.
@@ -443,7 +467,7 @@
     </p>
     <div class="clear"></div>
 
-    <canvas class="pull-right step-canvas" id="canvas-magnify" style="background: #000;"></canvas>
+    <canvas class="pull-right step-canvas loading" id="canvas-magnify" style="background: #000;"></canvas>
     <p class="lead">Step 8<i id="timer-magnify" class="timer"></i></p>
     <p>
       Because the images on the right are reduced to give way to the explanations you will probably not see much of a difference,
@@ -550,7 +574,7 @@
   </div>
 
   <div class="textbloc">
-    <canvas class="pull-right step-canvas" id="canvas-render"></canvas>
+    <canvas class="pull-right step-canvas loading" id="canvas-render"></canvas>
     <p class="lead">Step 9<i id="timer-texturize" class="timer"></i></p>
     <p>
       In this texturing step we loop through the pixels of our mask one by one.
@@ -564,7 +588,7 @@
     </p>
     <div class="clear"></div>
 
-    <canvas class="pull-right step-canvas" id="canvas-surface"></canvas>
+    <canvas class="pull-right step-canvas loading" id="canvas-surface"></canvas>
     <p class="lead">Step 10<i id="timer-position-generator" class="timer"></i></p>
     <p>
       Before we can drop some characters on our terrain, we need to find where they can fit.
@@ -577,7 +601,7 @@
     </p>
     <div class="clear"></div>
 
-    <canvas class="pull-right step-canvas" id="canvas-chara"></canvas>
+    <canvas class="pull-right step-canvas loading" id="canvas-chara"></canvas>
     <p class="lead">Step 11<i id="timer-characters" class="timer"></i></p>
     <p>
       Now we'd like to add some characters randomly, but with some minimal distance between them and ideally
@@ -601,7 +625,7 @@
     </p>
     <div class="clear"></div>
 
-    <img class="pull-right step-canvas" src="./img/demo/water.gif">
+    <img class="pull-right" style="max-width: 50%" src="./img/demo/water.gif">
     <p class="lead">Step 12<i id="timer-wave" class="timer"></i></p>
     <p>
       Finally for a touch of animation we'll add some water.
@@ -615,27 +639,31 @@
       and stack them on top of each other. This is what I've done for the final result at the top of this page.
     </p>
     <div class="clear"></div>
-
-    <div class="textbloc limitedwidth">
-      <h3>Conclusion</h3>
-      <p>
-        Thanks to all the API available in modern browsers we've been able to do some fast image processing and generate a pretty decent
-        terrain all client-side. I haven't covered all the details but the code is now open source, hopefully with enough comments,
-        so I invite you to <a href="https://github.com/juliango202/TerrainVer">check it out</a> if you want to know more.
-        And maybe reuse it for your own game?
-        <img style="vertical-align: middle" src="./img/demo/smile.png">
-      </p>
-    </div>
-
   </div>
 
-  <a class="home" style="position: relative; top: 7em;" href="/">
+  <div class="textbloc limitedwidth">
+    <h3>Conclusion</h3>
+    <p>
+      Thanks to all the API available in modern browsers we've been able to do some fast image processing and generate a pretty decent
+      terrain all client-side. I haven't covered all the details but the code is now open source, hopefully with enough comments,
+      so I invite you to <a href="https://github.com/juliango202/TerrainVer">check it out</a> if you want to know more.
+      And maybe reuse it for your own game?
+      <img style="vertical-align: middle" src="./img/demo/smile.png">
+    </p>
+    <p style="font-size: smaller; margin-top: 7em; text-align: center">
+      P.S. <a href="/job.html">I'm currently available for a job</a>
+    </p>
+  </div>
+
+  <a class="home" href="/">
     <svg fill="currentColor" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
       <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
       <path d="M0 0h24v24H0z" fill="none"></path>
     </svg><br>
     Home
   </a>
+
+  <a href="https://github.com/juliango202/TerrainVer"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
 
   <!--
     For browsers that don't support es6 modules

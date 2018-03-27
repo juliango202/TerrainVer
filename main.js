@@ -62,6 +62,7 @@ async function renderTerrain () {
     document.getElementById('fgcanvas'),
     document.getElementById('fgwater')
   )
+  document.getElementById('result').classList.remove('loading')
 
   if (history.pushState) {
     // display current terrain config to querystring for linking

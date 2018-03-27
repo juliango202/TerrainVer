@@ -83,9 +83,9 @@ export default class TerrainRenderer {
     fgCtx.putImageData(this.terr, 0, 0)
 
     if (debug) {
-      drawStepToCanvas(fgCanvas, 'canvas-render')
-      drawStepToCanvas(fgCanvas, 'canvas-surface')
-      this.posGenerator.drawSurfacePoints(document.getElementById('canvas-surface'))
+      drawStepToCanvas(fgCanvas, 'canvas-render', 0.5)
+      drawStepToCanvas(fgCanvas, 'canvas-surface', 0.5)
+      this.posGenerator.drawSurfacePoints(document.getElementById('canvas-surface'), 0.5)
     }
 
     // Draw characters
@@ -93,7 +93,7 @@ export default class TerrainRenderer {
     this.drawCharacters(seed, randomGen, fgCtx)
     if (debug) timer.stop('characters')
 
-    if (debug) drawStepToCanvas(fgCanvas, 'canvas-chara')
+    if (debug) drawStepToCanvas(fgCanvas, 'canvas-chara', 0.5)
     if (debug) timer.start('wave')
     this.drawWave(fgWaterCanvas, this.terr.width, 160, 21)
     if (debug) timer.stop('wave')

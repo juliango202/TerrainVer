@@ -65,6 +65,7 @@ export function drawStepToCanvas (src, dest, scaleFactor) {
   if (typeof dest === 'string') {
     dest = document.getElementById(dest)
   }
+  dest.classList.remove('loading')
   dest.width = Math.floor(src.width * scaleFactor)
   dest.height = Math.floor(src.height * scaleFactor)
   if (src instanceof HTMLCanvasElement) {

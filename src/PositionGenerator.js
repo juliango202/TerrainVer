@@ -78,12 +78,12 @@ export default class PositionGenerator {
     return this.surfacePoints[Math.floor(nextRandomNb * this.surfacePoints.length)]
   }
 
-  drawSurfacePoints (terrainCanvas) {
+  drawSurfacePoints (terrainCanvas, scaleFactor) {
     const ctx = terrainCanvas.getContext('2d')
     ctx.fillStyle = 'rgba(255,0,0,1)'
     for (let curr = 0; curr < this.surfacePoints.length; curr++) {
       let currPt = this.surfacePoints[curr]
-      ctx.fillRect(currPt[0] - 1, currPt[1] - 1, 3, 3)
+      ctx.fillRect(currPt[0]*scaleFactor, currPt[1]*scaleFactor - 1, 1, 2)
     }
   }
 }

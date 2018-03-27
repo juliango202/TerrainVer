@@ -128,6 +128,24 @@
       margin: 0 10px 9px 10px;
       z-index: 20;
     }
+    body.fallback-mode #genform,
+    body.fallback-mode #charasform {
+      display: none;
+    }
+
+    body.fallback-mode .interactive {
+      text-decoration: line-through;
+    }
+
+    #fallback-msg {
+      display: none;
+      color: #e55;
+      font-style: italic;
+      font-size: 90%;
+    }
+    body.fallback-mode #fallback-msg {
+      display: block;
+    }
 
     .sticky {
       position: fixed;
@@ -292,6 +310,11 @@
     </p>
   </div>
 
+  <div id="fallback-msg">
+    There was a problem loading the interactive demo, screenshots are displayed as a fallback mode.<br>
+    To access the demo make sure you run a recent version of your browser, try to empty the cache and reload the page.
+  </div>
+
   <div id="result" class="loading">
     <div id="loading-msg">Loading...</div>
     <canvas id="bgcanvas" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 10;"></canvas>
@@ -332,7 +355,7 @@
       <label for="wateranim">Water anim</label>
     </div>
   </form>
-  <p style="text-align: center">
+  <p class="interactive" style="text-align: center">
     <i>You can use the controls above to generate another terrain at random, or change the terrain type.</i>
   </p>
 
@@ -381,11 +404,11 @@
       Next as suggested in <a href="https://gamedev.stackexchange.com/a/20606">bummzack answer</a> you add some <a href="https://en.wikipedia.org/wiki/Perlin_noise">Perlin noise</a>.<br>
     </p>
     <p>
-      This generates continuous "wrinkles" of different size all over the image.
+      This generates continuous "wrinkles" of different size over the image.
       I used this <a href="https://github.com/josephg/noisejs">JavaScript library by josephg</a> to generate two layers of noise:
       <ul>
       <li>The first and main layer covers the whole image and will be the basis for the hollows and bumps of our terrain.
-      You can change the noise resolution with the slider above, I encourage you to try a smaller resolution to see the difference.</li>
+      <span class="interactive">You can change the noise resolution with the slider above, I encourage you to try a smaller resolution to see the difference.</span></li>
       <li>The second layer is always set at a very small resolution and covers only the <i>black</i> zone, it will prevent the hollows and bumps to encroach too much in this zone.</li>
       </ul>
     </p>
@@ -433,7 +456,7 @@
     <p>
     Our goal is to remove all the tunnels and the hollows that are too small:
     the size of the dilation should be the size of the regions we want to fill. Here we don't want any hollow to be less than 20 pixels (so that
-    our worms can enter them), we do 5 dilations with a 5x5 kernel that looks like this(the white corners will smooth our contours a bit):<br>
+    our game characters can enter them), we do 5 dilations with a 5x5 kernel that looks like this(the white corners will smooth our contours a bit):<br>
     <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHsAAAB5CAAAAAA8ZAGoAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4gMLDyUuOIB37QAAAOlJREFUaN7t2iEPwjAQhuHrQkX5mRjMBAIEjmS4WbD8R8xqGoohmdjnIGtJ31PL9ZJnXU5cLnPZikVnDduFvrvLZmZudTeb2WZ+XL7XfVLZ46iK/UGmh6e+cvO9ho2NjY2NjY39B3YFc+pNnfePSaZlsd/L9PWSRHa7s9mO8uVilOOtLE46/YqJXsPGxsbGxsbG/iI+81qQh0EveWWx1+kuyFmxlhlZ7mFPP9jljmd179DT59jY2NjY2NjY9dvsckWwy8XGxsbGxsbGLm43vsvlv1xsbGxsbGxsbOzl0FZ6Ts254L3ptTXjDZKiSOhDvDWnAAAAAElFTkSuQmCC" alt="" />
     </p>
     <p>
@@ -463,7 +486,7 @@
     </p>
     <p>
       In image processing, the dilation plus erosion filtering we used is sometimes called a <a href="https://en.wikipedia.org/wiki/Closing_(morphology)">closing</a>.
-      Basically it removes inner background regions and smooth the contours a bit, without changing the size of the terrain.
+      Basically it removes small background regions and smooth the contours a bit, without changing the overall size of the terrain.
     </p>
     <div class="clear"></div>
 
@@ -481,7 +504,7 @@
     <p>
       To improve things I first tried to apply successive mean filters, or average filters, followed by a threshold pass. When repeated multiple times for
       both the red and the black regions, this greatly improves the contour but there is still some aliasing(<i>Avg</i> below).
-      Looking for a solution online, I learned that there are a <a href="https://en.wikipedia.org/wiki/Pixel-art_scaling_algorithms">number of algorithms</a>
+      Looking for a solution online, I learned that there exist a <a href="https://en.wikipedia.org/wiki/Pixel-art_scaling_algorithms">number of algorithms</a>
       for my anti-aliasing/depixelating task, even some
       <a href="https://www.cg.tuwien.ac.at/research/publications/2015/KREUZER-2015-DPA/">recent research</a>.
       I could implement <a href="http://www.scale2x.it/algorithm">Scale3x</a> as a filter, and found JavaScript libraries for the
@@ -596,7 +619,7 @@
     </p>
     <p>
       To avoid collisions and spots that are too narrow, we apply a small erosion
-      filter that will remove some pixels at the ends of each surface segment.
+      filter that will chop off some pixels at the ends of each surface segment.
       We also drop surface pixels that are too low, because this is where we want to add water.
     </p>
     <div class="clear"></div>
@@ -615,8 +638,8 @@
     </p>
     <p>
       This means we can generate uniformly distributed points without knowing the total number of points in advance,
-      something that we could use in a game for dropping stuff, adding more characters...<br>
-      You can see the effect of the Halton sequence by changing the numbers of characters with the slider below:
+      something that we could use in a game for dropping objects, adding more characters...<br>
+      <span class="interactive">You can see the effect of the Halton sequence by changing the numbers of characters with the slider below:</span>
     </p>
     <p>
       <form name="charasform" id="charasform">
@@ -629,7 +652,7 @@
     <p class="lead">Step 12<i id="timer-wave" class="timer"></i></p>
     <p>
       Finally for a touch of animation we'll add some water.
-      For that we can simply draw a semi-transparent sinus wave at regular interval.
+      For that we can simply draw a semi-transparent sinus wave at regular intervals.
       To give a sense of depth we'll put one behind the terrain and one in front.
     </p>
     <p>
@@ -645,13 +668,13 @@
     <h3>Conclusion</h3>
     <p>
       Thanks to all the API available in modern browsers we've been able to do some fast image processing and generate a pretty decent
-      terrain all client-side. I haven't covered all the details but the code is now open source, hopefully with enough comments,
+      terrain all client-side. I haven't covered all the details but the code is open source, hopefully with enough comments,
       so I invite you to <a href="https://github.com/juliango202/TerrainVer">check it out</a> if you want to know more.
       And maybe reuse it for your own game?
       <img style="vertical-align: middle" src="./img/demo/smile.png">
     </p>
     <p style="font-size: smaller; margin-top: 7em; text-align: center">
-      P.S. <a href="/job.html">I'm currently available for a job</a>
+      P.S. <a href="/job">I'm currently available for a job</a>
     </p>
   </div>
 
